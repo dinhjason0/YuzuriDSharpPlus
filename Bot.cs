@@ -42,7 +42,7 @@ namespace Yuzuri
             };
 
             Commands = Client.UseCommandsNext(commandsConfig);
-            Commands.RegisterCommands<PlayersStartUp>();
+            Commands.RegisterCommands<Players>();
 
             await Client.ConnectAsync();
 

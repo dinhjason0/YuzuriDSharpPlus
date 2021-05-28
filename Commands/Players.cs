@@ -12,7 +12,7 @@ using Yuzuri.Commons;
 
 namespace Yuzuri.Commands
 {
-    public class PlayersStartUp : BaseCommandModule
+    public class Players : BaseCommandModule
     {
 
         [Command("start"), Description("Start your adventure!")]
@@ -31,12 +31,23 @@ namespace Yuzuri.Commands
 
                 if (name.Length == 0) name = ctx.User.Username;
 
-                Player player = new Player(ctx.User, name);
+                Player player = new Player(ctx.User.Id, name);
 
                 Bot.PlayerManager.WritePlayerData(player);
             }
-
         }
 
+        [Command("stats"), Description("View your stats")]
+        public async Task Stats(CommandContext ctx)
+        {
+            Player player = Bot.PlayerManager.ReadPlayerData(ctx.User.Id);
+
+            var embed = new DiscordEmbedBuilder
+            {
+                Title = $"{player.Name}'s Stats",
+                Url = ctx.User.AvatarUrl,
+                Color = DiscordColor.Green,
+            };
+        }
     }
 }

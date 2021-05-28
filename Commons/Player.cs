@@ -7,7 +7,7 @@ namespace Yuzuri.Commons
 {
     public class Player
     {
-        public SnowflakeObject UserId { get; set; }
+        public ulong UserId { get; set; }
         public string Name { get; set; }
         public int HP { get; set; }
         public int STR { get; set; }
@@ -19,7 +19,7 @@ namespace Yuzuri.Commons
         public Item[] Inventory { get; set; }
         public List<int> Favourites { get; set; }
 
-        public Player(SnowflakeObject userId, string name)
+        public Player(ulong userId, string name)
         {
             UserId = userId;
             Name = name;
