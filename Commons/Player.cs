@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DSharpPlus.Entities;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -6,6 +7,7 @@ namespace Yuzuri.Commons
 {
     public class Player
     {
+        public SnowflakeObject UserId { get; set; }
         public string Name { get; set; }
         public int HP { get; set; }
         public int STR { get; set; }
@@ -17,8 +19,9 @@ namespace Yuzuri.Commons
         public Item[] Inventory { get; set; }
         public List<int> Favourites { get; set; }
 
-        public Player(string name)
+        public Player(SnowflakeObject userId, string name)
         {
+            UserId = userId;
             Name = name;
             HP = 10;
             STR = 1;

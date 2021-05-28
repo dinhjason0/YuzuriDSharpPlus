@@ -11,22 +11,6 @@ namespace Yuzuri
         [JsonProperty("Prefix")]
         public string Prefix { get; private set; }
 
-        [JsonProperty("NadekoBotDB")]
-        public string NadekoBotDB { get; private set; }
-
-        [JsonProperty("NQRate")]
-        public double NQRate { get; private set; }
-
-        [JsonProperty("NQPRate")]
-        public double NQPRate { get; private set; }
-
-        [JsonProperty("HQRate")]
-        public double HQRate { get; private set; }
-
-        [JsonProperty("HHQRate")]
-        public double HHQRate { get; private set; }
-
-        [JsonProperty("UQRate")]
-        public double UQRate { get; private set; }
-    }
+        [JsonProperty("PlayerFilePath")]
+        public string PlayerFilePath { get; private set; }
 }

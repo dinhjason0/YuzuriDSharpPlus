@@ -6,6 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using Newtonsoft.Json;
+using Yuzuri.Managers;
+using Yuzuri.Commands;
 
 namespace Yuzuri
 {
@@ -15,8 +17,13 @@ namespace Yuzuri
         public CommandsNextExtension Commands { get; private set; } 
         public InteractionCreateEventArgs Interaction { get; private set; }
         public ConfigJson Config { get; protected set; }
+        public static PlayerManager PlayerManager { get; private set; }
         public async Task RunAsync()
         {
+            Config = RegisterConfig().Result;
+
+            PlayerManager = new PlayerManager(Config.PlayerFilePath);
+
             var discordConfig = new DiscordConfiguration
             {
                 Token = Config.Token,
@@ -26,12 +33,16 @@ namespace Yuzuri
 
             Client = new DiscordClient(discordConfig);
 
+            
+
             var commandsConfig = new CommandsNextConfiguration
             {
+                StringPrefixes = new string[] { Config.Prefix }                
 
             };
 
             Commands = Client.UseCommandsNext(commandsConfig);
+            Commands.RegisterCommands<PlayersStartUp>();
 
             await Client.ConnectAsync();
 
