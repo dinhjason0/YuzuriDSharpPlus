@@ -15,11 +15,12 @@ namespace Yuzuri.Commands
     public class Players : BaseCommandModule
     {
 
-        [Command("start"), Description("Start your adventure!")]
-        public async Task Start(CommandContext ctx, [Description("Name you wish to start with")] string name = "")
+        [Command("adventure")]
+        public async Task Start(CommandContext ctx)
         {
+            Console.WriteLine("role");
             DiscordRole role = (DiscordRole)ctx.Member.Roles.Where(r => r.Name == "Player");
-            
+            Console.WriteLine("role found");
             if (role != null)
             {
                 await ctx.Channel.SendMessageAsync($"You're already a player!").ConfigureAwait(false);
@@ -29,9 +30,9 @@ namespace Yuzuri.Commands
                 await ctx.Channel.SendMessageAsync($"Link connection has been established. Say hello to your new room {ctx.User.Username}").ConfigureAwait(false);
                 await ctx.Guild.Members[ctx.User.Id].GrantRoleAsync(role).ConfigureAwait(false);
 
-                if (name.Length == 0) name = ctx.User.Username;
+                //if (name.Length == 0) name = ctx.User.Username;
 
-                Player player = new Player(ctx.User.Id, name);
+                Player player = new Player(ctx.User.Id, ctx.User.Username);
 
                 Bot.PlayerManager.WritePlayerData(player);
             }
@@ -48,6 +49,21 @@ namespace Yuzuri.Commands
                 Url = ctx.User.AvatarUrl,
                 Color = DiscordColor.Green,
             };
+
+            embed.AddField("**Stats**", $"HP: {player.HP}\n" +
+                $"STR: {player.STR}\n" +
+                $"DEX: {player.DEX}\n" +
+                $"SPD: {player.SPD}\n" +
+                $"MPE: {player.MPE}\n" +
+                $"HIT: {player.HIT}");
+
+            await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
+        }
+
+        [Command("ping")]
+        public async Task Ping(CommandContext ctx)
+        {
+            ctx.Channel.SendMessageAsync("Pong!").ConfigureAwait(false);
         }
     }
 }

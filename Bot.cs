@@ -8,6 +8,7 @@ using System.IO;
 using Newtonsoft.Json;
 using Yuzuri.Managers;
 using Yuzuri.Commands;
+using Microsoft.Extensions.Logging;
 
 namespace Yuzuri
 {
@@ -22,18 +23,19 @@ namespace Yuzuri
         {
             Config = RegisterConfig().Result;
 
+            Console.WriteLine($"Commands {Config.Prefix}");
+
             PlayerManager = new PlayerManager(Config.PlayerFilePath);
 
             var discordConfig = new DiscordConfiguration
             {
-                Token = Config.Token,
+                Token = debug.Token,
                 TokenType = TokenType.Bot,
-                AutoReconnect = true
+                AutoReconnect = true,
+                MinimumLogLevel = LogLevel.Debug
             };
 
             Client = new DiscordClient(discordConfig);
-
-            
 
             var commandsConfig = new CommandsNextConfiguration
             {
@@ -44,9 +46,9 @@ namespace Yuzuri
             Commands = Client.UseCommandsNext(commandsConfig);
             Commands.RegisterCommands<Players>();
 
-            await Client.ConnectAsync();
+            await Client.ConnectAsync().ConfigureAwait(false);
 
-            await Task.Delay(1);
+            await Task.Delay(-1);
         }
 
         private async Task<ConfigJson> RegisterConfig()

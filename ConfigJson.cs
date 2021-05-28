@@ -13,4 +13,5 @@ namespace Yuzuri
 
         [JsonProperty("PlayerFilePath")]
         public string PlayerFilePath { get; private set; }
+    }
 }
