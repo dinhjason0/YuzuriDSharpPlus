@@ -24,30 +24,40 @@ namespace Yuzuri
             Config = RegisterConfig().Result;
 
             PlayerManager = new PlayerManager(Config.PlayerFilePath);
-
-            var discordConfig = new DiscordConfiguration
+            try
             {
-                Token = Config.Token,
-                TokenType = TokenType.Bot,
-                AutoReconnect = true,
-            };
+                var discordConfig = new DiscordConfiguration
+                {
+                    Token = Config.Token,
+                    TokenType = TokenType.Bot,
+                    AutoReconnect = true,
+                };
 
-            Client = new DiscordClient(discordConfig);
-
-            
+                Client = new DiscordClient(discordConfig);
+            }
+            catch
+            {
+                Console.Write("Choke @ discordConfig");
+            }
 
             var commandsConfig = new CommandsNextConfiguration
             {
                 StringPrefixes = new string[] { Config.Prefix }                
 
             };
+            try
+            {
+                Commands = Client.UseCommandsNext(commandsConfig);
+                Commands.RegisterCommands<Players>();
+                await Client.ConnectAsync();
 
-            Commands = Client.UseCommandsNext(commandsConfig);
-            Commands.RegisterCommands<Players>();
+                await Task.Delay(1);
+            }
+            catch
+            {
+                Console.WriteLine("Choke at Commands Client");
+            }
 
-            await Client.ConnectAsync();
-
-            await Task.Delay(1);
         }
 
         private async Task<ConfigJson> RegisterConfig()
