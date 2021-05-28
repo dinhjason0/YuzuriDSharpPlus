@@ -63,7 +63,7 @@ namespace Yuzuri.Commands
         [Command("ping")]
         public async Task Ping(CommandContext ctx)
         {
-            ctx.Channel.SendMessageAsync("Pong!").ConfigureAwait(false);
+            await ctx.Channel.SendMessageAsync("Pong!").ConfigureAwait(false);
         }
     }
 }
