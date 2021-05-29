@@ -19,6 +19,14 @@ namespace Yuzuri.Commons
         public Item[] Inventory { get; set; }
         public List<int> Favourites { get; set; }
 
+        public int AS { get; set; }
+        public int WW { get; set; }
+        public int DMG { get; set; }
+        public int DR { get; set; }
+        public int DGD { get; set; }
+
+        public ulong RoomId { get; set; }
+
         public Player(ulong userId, string name)
         {
             UserId = userId;
@@ -32,6 +40,12 @@ namespace Yuzuri.Commons
 
             Inventory = new Item[50];
             Favourites = new List<int>();
+
+            AS = 1;
+            WW = 0;
+            DMG = 0;
+            DR = 0;
+            DGD = 1;
         }
 
         public Item GetItem(int invIndex)

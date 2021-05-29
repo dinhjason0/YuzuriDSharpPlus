@@ -13,7 +13,7 @@ using Yuzuri.Commons;
 
 namespace Yuzuri.Commands
 {
-    public class Players : BaseCommandModule
+    public class PlayerCommands : BaseCommandModule
     {
 
         [Command("start"), Description("Start your adventure!"), Aliases("adventure")]
@@ -25,8 +25,11 @@ namespace Yuzuri.Commands
                 await ctx.Member.GrantRoleAsync(playerRole).ConfigureAwait(false);
 
                 if (name.Length == 0) name = ctx.User.Username;
-                
+                Console.WriteLine(name);
                 Player player = new Player(ctx.User.Id, name);
+
+                var room = await Bot.PlayerManager.CreatePlayerRoom(ctx.Guild, player).ConfigureAwait(false);
+                player.RoomId = room.Id;
 
                 Bot.PlayerManager.WritePlayerData(player);
             }
@@ -94,6 +97,7 @@ namespace Yuzuri.Commands
 
                 await ctx.Channel.SendMessageAsync("Your adventure ends here.").ConfigureAwait(false);
                 await ctx.Member.RevokeRoleAsync(discordRole).ConfigureAwait(false);
+                await Bot.PlayerManager.RemovePlayerRoom(ctx.Guild, Bot.PlayerManager.ReadPlayerData(ctx.User.Id)).ConfigureAwait(false);
             }
             else
             {
@@ -110,12 +114,8 @@ namespace Yuzuri.Commands
 
         private bool PlayerRoleCheck(DiscordGuild guild, DiscordMember member, out DiscordRole playerRole)
         {
-            playerRole = null;
-            foreach (KeyValuePair<ulong, DiscordRole> role in guild.Roles)
-            {
-                if (role.Value.Name == "Player") playerRole = role.Value;
-                
-            }
+            YuzuGuild yuzuGuild = Bot.GuildManager.ReadGuildData(guild.Id);
+            playerRole = guild.GetRole(yuzuGuild.RoleId);
             
             return member.Roles.Contains(playerRole);
         }

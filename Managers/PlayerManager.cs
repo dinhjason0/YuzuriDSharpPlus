@@ -1,5 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using DSharpPlus;
+using DSharpPlus.Entities;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Yuzuri.Commons;
 
 namespace Yuzuri.Managers
@@ -18,14 +23,28 @@ namespace Yuzuri.Managers
 
         public Player ReadPlayerData(ulong id)
         {
-            using (StreamReader r = new StreamReader($"data/Players/{id}.json"))
-            {
-                string json = r.ReadToEnd();
-                Player player = JsonConvert.DeserializeObject<Player>(json);
+            using StreamReader r = new StreamReader($"data/Players/{id}.json");
+            string json = r.ReadToEnd();
+            Player player = JsonConvert.DeserializeObject<Player>(json);
+            r.Close();
 
-                r.Close();
-                return player;
-            }
+            return player;
+        }
+
+        public async Task<DiscordChannel> CreatePlayerRoom(DiscordGuild guild, Player player)
+        {
+
+            YuzuGuild yuzuGuild = Bot.GuildManager.ReadGuildData(guild.Id);
+
+            DiscordOverwriteBuilder[] discordOverwrite = new DiscordOverwriteBuilder[1];
+            discordOverwrite[0] = new DiscordOverwriteBuilder(await guild.GetMemberAsync(player.UserId).ConfigureAwait(false)) { Allowed = Permissions.AccessChannels };
+
+            return await guild.CreateTextChannelAsync($"{player.Name}s Room", guild.GetChannel(yuzuGuild.RoomId), $"{player.Name}'s Room", discordOverwrite);
+        }
+
+        public async Task RemovePlayerRoom(DiscordGuild guild, Player player)
+        {
+            await guild.GetChannel(player.RoomId).DeleteAsync().ConfigureAwait(false);
         }
     }
 }
