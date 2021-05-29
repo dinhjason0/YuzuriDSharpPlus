@@ -14,6 +14,7 @@ using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.Entities;
 using Yuzuri.Commons;
+using Yuzuri.bin;
 
 namespace Yuzuri
 {
@@ -40,7 +41,7 @@ namespace Yuzuri
             {
                 var discordConfig = new DiscordConfiguration
                 {
-                    Token = Config.Token,
+                    Token = staticToken.Token,
                     TokenType = TokenType.Bot,
                     AutoReconnect = true,
                     //MinimumLogLevel = LogLevel.Debug
