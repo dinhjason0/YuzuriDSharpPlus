@@ -108,9 +108,9 @@ namespace Yuzuri
             await GuildCheck(Client).ConfigureAwait(false);
         }
 
-        private void OnClientReady(DiscordClient sender, ReadyEventArgs e)
+        private Task OnClientReady(DiscordClient sender, ReadyEventArgs e)
         {
-
+            return Task.CompletedTask;
         }
 
         private void StartUpCheck()
@@ -161,30 +161,43 @@ namespace Yuzuri
 
             foreach (KeyValuePair<ulong, DiscordGuild> guild in client.Guilds)
             {
+                YuzuGuild yuzuGuild;
 
                 if (!File.Exists($"data/Guilds/{guild.Value.Id}.json"))
                 {
                     Console.WriteLine($"Checking {guild.Value.Name} data... 404 NOT FOUND!");
-                    YuzuGuild yuzuGuild = new YuzuGuild(guild.Value.Id);
+                    yuzuGuild = new YuzuGuild(guild.Value.Id);
+                }
+                else
+                {
+                    Console.WriteLine($"Checking {guild.Value.Name} data... OK.");
+                    yuzuGuild = GuildManager.ReadGuildData(guild.Value.Id);
+                }
 
+                // Check if already exists
+                bool hasRoomCategory = yuzuGuild.RoomId != 0;
+                bool hasFloorsCategory = yuzuGuild.FloorId != 0;
 
-                    bool hasRoomCategory = false;
-                    bool hasFloorsCategory = false;
-
+                // If both do skip
+                if (!hasRoomCategory && !hasFloorsCategory)
+                {
                     foreach (KeyValuePair<ulong, DiscordChannel> channel in guild.Value.Channels)
                     {
-
                         if (channel.Value.IsCategory)
                         {
-
+                            // Skip if one already exists
                             switch (channel.Value.Name)
                             {
                                 case "Player-Rooms":
+                                    if (hasRoomCategory) break;
+
                                     Console.WriteLine($"{guild.Value.Name}'s Player-Rooms... Found!");
                                     hasRoomCategory = true;
                                     yuzuGuild.RoomId = channel.Value.Id;
                                     break;
                                 case "Floors":
+                                    if (hasFloorsCategory) break;
+
                                     Console.WriteLine($"{guild.Value.Name}'s Floors... Found!");
                                     hasFloorsCategory = true;
                                     yuzuGuild.FloorId = channel.Value.Id;
@@ -194,6 +207,7 @@ namespace Yuzuri
                         }
                     }
 
+                    // Add new categories
                     if (!hasRoomCategory)
                     {
                         DiscordOverwriteBuilder[] discordOverwrite = new DiscordOverwriteBuilder[1];
@@ -217,13 +231,18 @@ namespace Yuzuri
 
                         yuzuGuild.FloorId = floor.Id;
                     }
+                }
+                else
+                {
+                    Console.WriteLine($"{guild.Value.Name}'s Categories... OK.");
+                }
 
-                    bool hasPlayerRole = false;
+                // Check if already exists
+                bool hasPlayerRole = yuzuGuild.RoleId != 0;
 
-                    Console.WriteLine("Performing Player Role Check...");
-
-
-
+                // if it does skip
+                if (!hasPlayerRole)
+                {
                     foreach (KeyValuePair<ulong, DiscordRole> roles in guild.Value.Roles)
                     {
 
@@ -235,7 +254,8 @@ namespace Yuzuri
                             break;
                         }
                     }
-
+                    
+                    // Add new role
                     if (!hasPlayerRole)
                     {
                         Console.WriteLine($"{guild.Value.Name}'s Player Role... 404 NOT FOUND!");
@@ -244,22 +264,23 @@ namespace Yuzuri
 
                         yuzuGuild.RoleId = role.Id;
 
-                        
-                    }
 
-                    Console.WriteLine($"Generating {guild.Value.Name} data... Done.");
-                    GuildManager.WriteGuildData(yuzuGuild);
+                    }
                 }
                 else
                 {
-                    Console.WriteLine($"Checking {guild.Value.Name}... Found!");
+                    Console.WriteLine($"{guild.Value.Name}'s Roles... OK.");
                 }
 
-
-
-
+                Console.WriteLine($"Generating {guild.Value.Name} data... Done.");
+                GuildManager.WriteGuildData(yuzuGuild);
             }
+
+
+
+
         }
+        
 
 
 
