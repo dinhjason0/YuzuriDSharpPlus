@@ -21,12 +21,27 @@ namespace Yuzuri.Commands
         {
             if (!PlayerRoleCheck(ctx.Guild, ctx.Member, out DiscordRole playerRole))
             {
-                await ctx.Channel.SendMessageAsync($"Link connection has been established. Say hello to your new room {ctx.User.Username}").ConfigureAwait(false);
-                await ctx.Member.GrantRoleAsync(playerRole).ConfigureAwait(false);
+                var interactivity = ctx.Client.GetInteractivity();
 
-                if (name.Length == 0) name = ctx.User.Username;
-                Console.WriteLine(name);
-                Player player = new Player(ctx.User.Id, name);
+                await ctx.Channel.SendMessageAsync($"New arrivals, please head towards the registry table. ").ConfigureAwait(false);
+                await Task.Delay(900);
+                await ctx.Channel.SendMessageAsync($"Hello new user, please state your name").ConfigureAwait(false);
+
+                var response = await interactivity
+                    .WaitForMessageAsync(x =>
+                        x.Channel == ctx.Channel
+                        && x.Author == ctx.User
+                    ).ConfigureAwait(false);
+
+                await ctx.Channel.SendMessageAsync($"Permission granted. Please hold, we are currently loading your quarters.").ConfigureAwait(false);
+                await Task.Delay(900);
+                await ctx.Channel.SendMessageAsync($"Requesting cloud data... Permission granted. linking to profile.").ConfigureAwait(false);
+                await Task.Delay(900);
+                await ctx.Channel.SendMessageAsync($"Link connection has been established. Say hello to your new room {response.Result.Content}").ConfigureAwait(false);
+
+                await ctx.Member.GrantRoleAsync(playerRole).ConfigureAwait(false);
+                
+                Player player = new Player(ctx.User.Id, response.Result.Content);
 
                 var room = await Bot.PlayerManager.CreatePlayerRoom(ctx.Guild, player).ConfigureAwait(false);
                 player.RoomId = room.Id;
