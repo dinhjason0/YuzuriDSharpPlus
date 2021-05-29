@@ -17,7 +17,7 @@ namespace Yuzuri.Commands
     {
 
         [Command("start"), Description("Start your adventure!"), Aliases("adventure")]
-        public async Task Start(CommandContext ctx, [Description("Start your adventure with a adventurers name")] string name = "")
+        public async Task Start(CommandContext ctx)
         {
             if (!PlayerRoleCheck(ctx.Guild, ctx.Member, out DiscordRole playerRole))
             {
@@ -33,20 +33,29 @@ namespace Yuzuri.Commands
                         && x.Author == ctx.User
                     ).ConfigureAwait(false);
 
-                await ctx.Channel.SendMessageAsync($"Permission granted. Please hold, we are currently loading your quarters.").ConfigureAwait(false);
-                await Task.Delay(1500);
-                await ctx.Channel.SendMessageAsync($"Requesting cloud data... Permission granted. linking to profile.").ConfigureAwait(false);
-                await Task.Delay(900);
-                await ctx.Channel.SendMessageAsync($"Link connection has been established. Say hello to your new room {response.Result.Content}").ConfigureAwait(false);
+                if (response.TimedOut)
+                {
+                    await ctx.Channel.SendMessageAsync($"User has not responded within allocated time. Returning user back...").ConfigureAwait(false);
+                }
+                else
+                {
+                    await ctx.Channel.SendMessageAsync($"Permission granted. Please hold, we are currently loading your quarters.").ConfigureAwait(false);
+                    await Task.Delay(1500);
+                    await ctx.Channel.SendMessageAsync($"Requesting cloud data... Permission granted. linking to profile.").ConfigureAwait(false);
+                    await Task.Delay(900);
+                    await ctx.Channel.SendMessageAsync($"Link connection has been established. Say hello to your new room {response.Result.Content}").ConfigureAwait(false);
 
-                await ctx.Member.GrantRoleAsync(playerRole).ConfigureAwait(false);
-                
-                Player player = new Player(ctx.User.Id, response.Result.Content);
+                    await ctx.Member.GrantRoleAsync(playerRole).ConfigureAwait(false);
 
-                var room = await Bot.PlayerManager.CreatePlayerRoom(ctx.Guild, player).ConfigureAwait(false);
-                player.RoomId = room.Id;
+                    Player player = new Player(ctx.User.Id, response.Result.Content);
 
-                Bot.PlayerManager.WritePlayerData(player);
+                    var room = await Bot.PlayerManager.CreatePlayerRoom(ctx.Guild, player).ConfigureAwait(false);
+                    player.RoomId = room.Id;
+
+                    Bot.PlayerManager.WritePlayerData(player);
+
+                    await room.SendMessageAsync($"{ctx.User.Mention} welcome to your room.\nThis is your personal room where you can check the following: Inventory, Skills, Spells and Equipment.").ConfigureAwait(false);
+                }
             }
             else
             {
@@ -93,7 +102,7 @@ namespace Yuzuri.Commands
             }
         }
 
-        [Command("quit"), Description("End your adventure")]
+        [Command("quit"), Description("End your adventure"), RequireRoles(RoleCheckMode.Any, new string[] { "Player" })]
         public async Task Quit(CommandContext ctx)
         {
             if (PlayerRoleCheck(ctx.Guild, ctx.Member, out DiscordRole discordRole))
@@ -110,9 +119,16 @@ namespace Yuzuri.Commands
                         && x.Emoji == DiscordEmoji.FromName(ctx.Client, ":white_check_mark:"))
                     .ConfigureAwait(false);
 
-                await ctx.Channel.SendMessageAsync("Your adventure ends here.").ConfigureAwait(false);
-                await ctx.Member.RevokeRoleAsync(discordRole).ConfigureAwait(false);
-                await Bot.PlayerManager.RemovePlayerRoom(ctx.Guild, Bot.PlayerManager.ReadPlayerData(ctx.User.Id)).ConfigureAwait(false);
+                if (reaction.TimedOut)
+                {
+                    await ctx.Channel.SendMessageAsync($"Request to quit timed out. Returning user to their adventure...");
+                }
+                else
+                {
+                    await ctx.Channel.SendMessageAsync("Your adventure ends here.").ConfigureAwait(false);
+                    await ctx.Member.RevokeRoleAsync(discordRole).ConfigureAwait(false);
+                    await Bot.PlayerManager.RemovePlayerRoom(ctx.Guild, Bot.PlayerManager.ReadPlayerData(ctx.User.Id)).ConfigureAwait(false);
+                }
             }
             else
             {

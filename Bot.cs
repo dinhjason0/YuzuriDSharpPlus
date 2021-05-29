@@ -40,7 +40,7 @@ namespace Yuzuri
             {
                 var discordConfig = new DiscordConfiguration
                 {
-                    Token = Debug.Token2,
+                    Token = Config.Token,
                     TokenType = TokenType.Bot,
                     AutoReconnect = true,
                     //MinimumLogLevel = LogLevel.Debug
@@ -69,6 +69,7 @@ namespace Yuzuri
             {
                 Commands = Client.UseCommandsNext(commandsConfig);
                 Commands.RegisterCommands<PlayerCommands>();
+                Commands.RegisterCommands<AdminCommands>();
             }
             catch
             {
@@ -156,7 +157,7 @@ namespace Yuzuri
 
         private async Task GuildCheck(DiscordClient client)
         {
-            await Task.Delay(1000);
+            
             Console.WriteLine("Performing Guild check...");
 
             foreach (KeyValuePair<ulong, DiscordGuild> guild in client.Guilds)
