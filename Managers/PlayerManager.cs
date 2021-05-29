@@ -6,16 +6,11 @@ namespace Yuzuri.Managers
 {
     public class PlayerManager
     {
-        private string FilePath { get; set; }
-
-        public PlayerManager(string filePath)
-        {
-            FilePath = filePath;
-        }
+        public PlayerManager() { }
 
         public void WritePlayerData(Player player)
         {
-            using StreamWriter w = File.CreateText($"{FilePath}/{player.UserId}.json");
+            using StreamWriter w = File.CreateText($"/data/Player/{player.UserId}.json");
             JsonSerializer searializer = new JsonSerializer();
             searializer.Serialize(w, player);
             w.Close();
@@ -23,7 +18,7 @@ namespace Yuzuri.Managers
 
         public Player ReadPlayerData(ulong id)
         {
-            using (StreamReader r = new StreamReader($"{FilePath}/{id}.json"))
+            using (StreamReader r = new StreamReader($"/data/Player/{id}.json"))
             {
                 string json = r.ReadToEnd();
                 Player player = JsonConvert.DeserializeObject<Player>(json);

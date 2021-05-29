@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using Yuzuri.Managers;
 using Yuzuri.Commands;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 
 namespace Yuzuri
 {
@@ -21,16 +22,20 @@ namespace Yuzuri
         public static PlayerManager PlayerManager { get; private set; }
         public async Task RunAsync()
         {
+            StartUpCheck();
+
             Config = RegisterConfig().Result;
 
-            PlayerManager = new PlayerManager(Config.PlayerFilePath);
+            PlayerManager = new PlayerManager();
+
             try
             {
                 var discordConfig = new DiscordConfiguration
                 {
-                    Token = Config.Token,
+                    Token = debug.Token,
                     TokenType = TokenType.Bot,
                     AutoReconnect = true,
+                    MinimumLogLevel = LogLevel.Debug
                 };
 
                 Client = new DiscordClient(discordConfig);
@@ -39,6 +44,7 @@ namespace Yuzuri
             {
                 Console.Write("Choke @ discordConfig");
             }
+
 
             var commandsConfig = new CommandsNextConfiguration
             {
@@ -49,9 +55,9 @@ namespace Yuzuri
             {
                 Commands = Client.UseCommandsNext(commandsConfig);
                 Commands.RegisterCommands<Players>();
-                await Client.ConnectAsync();
+                await Client.ConnectAsync().ConfigureAwait(false);
 
-                await Task.Delay(1);
+                await Task.Delay(-1);
             }
             catch
             {
@@ -67,9 +73,9 @@ namespace Yuzuri
             using (StreamReader sr = new StreamReader(fs, new UTF8Encoding(false)))
                 json = await sr.ReadToEndAsync().ConfigureAwait(false);
 
-            var configJson = JsonConvert.DeserializeObject<ConfigJson>(json);
+            ConfigJson configJson = JsonConvert.DeserializeObject<ConfigJson>(json);
 
-            Console.WriteLine("Loaded Config file.");
+            Console.WriteLine("Config... OK.");
 
             return configJson;
         }
@@ -83,6 +89,39 @@ namespace Yuzuri
         {
             return Task.CompletedTask;
         }
+
+        private void StartUpCheck()
+        {
+            Console.WriteLine("Performing Startup checks...");
+
+            Directory.CreateDirectory("data/");
+            Directory.CreateDirectory("data/Players");
+
+            Console.WriteLine("Directories... OK.");
+
+            if (!File.Exists("data/config.json"))
+            {
+                Console.WriteLine("Config... 404 NOT FOUND!");
+                ConfigJson configJson = new ConfigJson()
+                { 
+                    Token = "",
+                    Prefix = "."
+                };
+
+                using StreamWriter w = File.CreateText("data/config.json");
+                JsonSerializer searializer = new JsonSerializer
+                {
+                    Formatting = Formatting.Indented
+                };
+                searializer.Serialize(w, configJson);
+                w.Close();
+
+                Console.WriteLine("Generating Config File... Done.");
+            }
+
+            Console.WriteLine("Startup checks completed.");
+        }
+
 
     internal struct NewStruct
     {

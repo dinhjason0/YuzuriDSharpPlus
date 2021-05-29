@@ -6,12 +6,9 @@ namespace Yuzuri
     public struct ConfigJson
     {
         [JsonProperty("Token")]
-        public string Token { get; private set; }
+        public string Token { get; set; }
 
         [JsonProperty("Prefix")]
-        public string Prefix { get; private set; }
-
-        [JsonProperty("PlayerFilePath")]
-        public string PlayerFilePath { get; private set; }
+        public string Prefix { get; set; }
     }
 }
