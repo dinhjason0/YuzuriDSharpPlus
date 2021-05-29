@@ -10,6 +10,8 @@ using Yuzuri.Managers;
 using Yuzuri.Commands;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
+using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Extensions;
 
 namespace Yuzuri
 {
@@ -45,6 +47,12 @@ namespace Yuzuri
                 Console.Write("Choke @ discordConfig");
             }
 
+            Client.UseInteractivity(new InteractivityConfiguration
+            {
+                Timeout = TimeSpan.FromSeconds(20),
+
+            });
+
 
             var commandsConfig = new CommandsNextConfiguration
             {
@@ -55,14 +63,15 @@ namespace Yuzuri
             {
                 Commands = Client.UseCommandsNext(commandsConfig);
                 Commands.RegisterCommands<Players>();
-                await Client.ConnectAsync().ConfigureAwait(false);
-
-                await Task.Delay(-1);
             }
             catch
             {
                 Console.WriteLine("Choke at Commands Client");
             }
+
+            await Client.ConnectAsync().ConfigureAwait(false);
+
+            await Task.Delay(-1);
 
         }
 
