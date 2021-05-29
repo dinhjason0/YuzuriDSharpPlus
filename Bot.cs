@@ -276,52 +276,6 @@ namespace Yuzuri
                 GuildManager.WriteGuildData(yuzuGuild);
             }
 
-
-
-
-        }
-        
-
-
-
-        internal struct NewStruct
-        {
-            public IServiceProvider service;
-            public object Item2;
-
-            public NewStruct(IServiceProvider service, object item2)
-            {
-                this.service = service;
-                Item2 = item2;
-            }
-
-            public override bool Equals(object obj)
-            {
-                return obj is NewStruct other &&
-                       EqualityComparer<IServiceProvider>.Default.Equals(service, other.service) &&
-                       EqualityComparer<object>.Default.Equals(Item2, other.Item2);
-            }
-
-            public override int GetHashCode()
-            {
-                return HashCode.Combine(service, Item2);
-            }
-
-            public void Deconstruct(out IServiceProvider service, out object item2)
-            {
-                service = this.service;
-                item2 = Item2;
-            }
-
-            public static implicit operator (IServiceProvider service, object)(NewStruct value)
-            {
-                return (value.service, value.Item2);
-            }
-
-            public static implicit operator NewStruct((IServiceProvider service, object) value)
-            {
-                return new NewStruct(value.service, value.Item2);
-            }
         }
     }
 }

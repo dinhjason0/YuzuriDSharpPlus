@@ -24,7 +24,7 @@ namespace Yuzuri.Commands
                 var interactivity = ctx.Client.GetInteractivity();
 
                 await ctx.Channel.SendMessageAsync($"New arrivals, please head towards the registry table. ").ConfigureAwait(false);
-                await Task.Delay(900);
+                await Task.Delay(1100);
                 await ctx.Channel.SendMessageAsync($"Hello new user, please state your name").ConfigureAwait(false);
 
                 var response = await interactivity
@@ -34,7 +34,7 @@ namespace Yuzuri.Commands
                     ).ConfigureAwait(false);
 
                 await ctx.Channel.SendMessageAsync($"Permission granted. Please hold, we are currently loading your quarters.").ConfigureAwait(false);
-                await Task.Delay(900);
+                await Task.Delay(1500);
                 await ctx.Channel.SendMessageAsync($"Requesting cloud data... Permission granted. linking to profile.").ConfigureAwait(false);
                 await Task.Delay(900);
                 await ctx.Channel.SendMessageAsync($"Link connection has been established. Say hello to your new room {response.Result.Content}").ConfigureAwait(false);

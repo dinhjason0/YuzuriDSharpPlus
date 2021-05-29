@@ -58,6 +58,23 @@ namespace Yuzuri.Commons
             Inventory[invIndex] = item;
         }
 
+        public void GiveItem(Item item)
+        {
+            Inventory[Inventory.Length] = item;
+        }
+
+        public void RemoveItem(Item item)
+        {
+            for(int i = 0; i < Inventory.Length; i++)
+            {
+                if (Inventory[i] == item)
+                {
+                    Inventory[i] = null;
+                    return;
+                }
+            }
+        }
+
         public void SetFavouriteInv(int favIndex)
         {
             if (!Favourites.Contains(favIndex))
