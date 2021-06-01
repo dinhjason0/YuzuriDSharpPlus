@@ -50,10 +50,9 @@ namespace Yuzuri.Commands
                     var clone = image.Clone(img => img
                     .Crop(new Rectangle(36, 1, 35, 35)));
                     clone.Save(outStream, pngEncoder);
-                    var fstemp = new FileStream(outStream);
                         var msg = await new DiscordMessageBuilder()
                     .WithContent("Generated Sprite")
-                    .WithFile(outStream)
+                    .WithFile((FileStream)(Stream)outStream)
                     .SendAsync(ctx.Channel);
                 }
             }
