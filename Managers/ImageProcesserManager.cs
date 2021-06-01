@@ -15,10 +15,6 @@ namespace Yuzuri.Managers
     public class ImageProcesserManager
     {
         //Dimensions for Sprite Sheet tiles
-        private const int topLeft = 1;
-        private const int topRight = 35;
-        private const int bottomLeft = 1;
-        private const int bottomRight = 35;
 
         //This class isn't exclusively "outfits", it includes stacking the torso
         public Image PlayerSpriteSheet()
@@ -35,6 +31,8 @@ namespace Yuzuri.Managers
             }
             return null;
         }
+
+        
 
         //public Sprite OutfitStacker()
         //{

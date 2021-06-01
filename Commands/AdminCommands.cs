@@ -9,6 +9,12 @@ using System.Text;
 using System.Threading.Tasks;
 using Yuzuri.Commons;
 
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Advanced;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Memory;
+
 namespace Yuzuri.Commands
 {
     public class AdminCommands : BaseCommandModule
@@ -34,12 +40,22 @@ namespace Yuzuri.Commands
         [RequirePermissions(DSharpPlus.Permissions.Administrator)]
         public async Task Generate(CommandContext ctx)
         {
-            using (var fs = new FileStream($"data\\Sprite_Resources\\PlayerSheet.png", FileMode.Open, FileAccess.Read))
+
+            using var fs = new FileStream($"data\\Sprite_Resources\\PlayerSheet.png", FileMode.Open, FileAccess.Read);
+            using (MemoryStream outStream = new MemoryStream())
+            using (var image = Image.Load(fs))
             {
-                var msg = await new DiscordMessageBuilder()
+                {
+                    var pngEncoder = new PngEncoder();
+                    var clone = image.Clone(img => img
+                    .Crop(new Rectangle(36, 1, 35, 35)));
+                    clone.Save(outStream, pngEncoder);
+                    var fstemp = new FileStream(outStream);
+                        var msg = await new DiscordMessageBuilder()
                     .WithContent("Generated Sprite")
-                    .WithFile(fs)
+                    .WithFile(outStream)
                     .SendAsync(ctx.Channel);
+                }
             }
         }
     }
