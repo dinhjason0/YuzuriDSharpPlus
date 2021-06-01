@@ -124,7 +124,9 @@ namespace Yuzuri
             Directory.CreateDirectory("data/Items");
             Directory.CreateDirectory("data/Floors");
             Directory.CreateDirectory("data/Monsters");
+            Directory.CreateDirectory("data/Bosses");
             Directory.CreateDirectory("data/Guilds");
+            Directory.CreateDirectory("data/Sprite_Resources");
 
             Console.WriteLine("Directories... OK.");
 
