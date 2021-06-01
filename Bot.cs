@@ -14,7 +14,7 @@ using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.Entities;
 using Yuzuri.Commons;
-using Yuzuri.bin;
+
 
 namespace Yuzuri
 {
@@ -24,24 +24,31 @@ namespace Yuzuri
         public CommandsNextExtension Commands { get; private set; }
         public InteractionCreateEventArgs Interaction { get; private set; }
         public ConfigJson Config { get; protected set; }
+
+
         public static PlayerManager PlayerManager { get; private set; }
         public static GuildManager GuildManager { get; private set; }
-
+        public static ItemManager ItemManager { get; private set; }
 
         public async Task RunAsync()
         {
+            DateTime dateTime = DateTime.Now;
             StartUpCheck();
 
             Config = RegisterConfig().Result;
 
+
+            Console.WriteLine("Loading Assets...");
             PlayerManager = new PlayerManager();
             GuildManager = new GuildManager();
+            ItemManager = new ItemManager();
+            Console.WriteLine("Assets Loaded!");
 
             try
             {
                 var discordConfig = new DiscordConfiguration
                 {
-                    Token = staticToken.Token,
+                    Token = Debug.Token,
                     TokenType = TokenType.Bot,
                     AutoReconnect = true,
                     //MinimumLogLevel = LogLevel.Debug
@@ -71,6 +78,7 @@ namespace Yuzuri
                 Commands = Client.UseCommandsNext(commandsConfig);
                 Commands.RegisterCommands<PlayerCommands>();
                 Commands.RegisterCommands<AdminCommands>();
+                Commands.RegisterCommands<ItemsCommand>();
             }
             catch
             {
@@ -78,6 +86,8 @@ namespace Yuzuri
             }
 
             RegisterEvents();
+
+            Console.WriteLine($"Yuzuki now Online! Startup took {(DateTime.Now - dateTime).TotalSeconds} seconds");
 
             await Client.ConnectAsync().ConfigureAwait(false);
 
@@ -101,7 +111,7 @@ namespace Yuzuri
 
         private void RegisterEvents()
         {
-            //Client.Ready += OnClientReady;
+            Client.Ready += OnClientReady;
             Client.GuildAvailable += GuildAvailable;
         }
 
@@ -110,9 +120,9 @@ namespace Yuzuri
             await GuildCheck(Client).ConfigureAwait(false);
         }
 
-        private Task OnClientReady(DiscordClient sender, ReadyEventArgs e)
+        private async Task OnClientReady(DiscordClient sender, ReadyEventArgs e)
         {
-            return Task.CompletedTask;
+            await sender.UpdateStatusAsync(new DiscordActivity($"Exploring floor {new Random().Next(101)}", ActivityType.Playing)).ConfigureAwait(false);
         }
 
         private void StartUpCheck()
@@ -160,7 +170,7 @@ namespace Yuzuri
 
         private async Task GuildCheck(DiscordClient client)
         {
-            
+            DateTime dateTime = DateTime.Now;
             Console.WriteLine("Performing Guild check...");
 
             foreach (KeyValuePair<ulong, DiscordGuild> guild in client.Guilds)
@@ -280,6 +290,13 @@ namespace Yuzuri
                 GuildManager.WriteGuildData(yuzuGuild);
             }
 
+            Console.WriteLine($"Discord Requirements check took {(DateTime.Now - dateTime).TotalSeconds} seconds");
+
+        }
+
+        public static void ReloadItems()
+        {
+            ItemManager = new ItemManager();
         }
     }
 }

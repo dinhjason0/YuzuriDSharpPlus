@@ -9,15 +9,40 @@ namespace Yuzuri.Commons
     {
         public ulong UserId { get; set; }
         public string Name { get; set; }
+        /// <summary>
+        /// Health Stat
+        /// </summary>
         public int HP { get; set; }
+        /// <summary>
+        /// Strength Stat
+        /// </summary>
         public int STR { get; set; }
+        /// <summary>
+        /// Dexterity Stat
+        /// </summary>
         public int DEX { get; set; }
+        /// <summary>
+        /// Speed Stat
+        /// </summary>
         public int SPD { get; set; }
+        /// <summary>
+        /// Magic Power Stat
+        /// </summary>
         public int MPE { get; set; }
+        /// <summary>
+        /// Hit chance Stat
+        /// </summary>
         public int HIT { get; set; }
+        /// <summary>
+        /// Damage roll stat
+        /// </summary>
+        public int DHL { get; set; }
 
         public Item[] Inventory { get; set; }
         public List<int> Favourites { get; set; }
+        public List<int> Equipped { get; set; }
+
+        public StatusEffects StatusEffects { get; set; }
 
         public int AS { get; set; }
         public int WW { get; set; }
@@ -37,9 +62,13 @@ namespace Yuzuri.Commons
             SPD = 1;
             MPE = 1;
             HIT = 1;
+            DHL = 1;
 
             Inventory = new Item[50];
             Favourites = new List<int>();
+            Equipped = new List<int>();
+
+            StatusEffects = StatusEffects.None;
 
             AS = 1;
             WW = 0;

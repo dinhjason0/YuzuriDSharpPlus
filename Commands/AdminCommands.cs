@@ -57,5 +57,12 @@ namespace Yuzuri.Commands
                 }
             }
         }
+
+        [Command("reloaditems"), Description("Reloads Item Dictionary")]
+        public async Task ReloadItems(CommandContext ctx)
+        {
+            await ctx.Channel.SendMessageAsync("Reloading Items...");
+            Bot.ReloadItems();
+        }
     }
 }

@@ -70,19 +70,48 @@ namespace Yuzuri.Commands
             {
                 Player player = Bot.PlayerManager.ReadPlayerData(ctx.User.Id);
 
+                string status = "";
+
+                switch (player.StatusEffects)
+                {
+                    case StatusEffects.Knockedout:
+                        status = $"```apache\nUnconscious\n```";
+                        break;
+                    case StatusEffects.Dead:
+                        status = $"```arm\nDead\n```";
+                        break;
+                    case StatusEffects.None:
+                        status = $"```yaml\nAlive\n```";
+                        break;
+                }
+                
+
                 var embed = new DiscordEmbedBuilder
                 {
                     Title = $"{player.Name}'s Stats",
-                    Url = ctx.User.AvatarUrl,
+                    Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail()
+                    {
+                        Url = ctx.User.AvatarUrl
+                    },
+                    Description = $"  Status: {status}",
                     Color = DiscordColor.Green,
                 };
 
-                embed.AddField("**Stats**", $"HP: {player.HP}\n" +
-                    $"STR: {player.STR}\n" +
-                    $"DEX: {player.DEX}\n" +
-                    $"SPD: {player.SPD}\n" +
-                    $"MPE: {player.MPE}\n" +
-                    $"HIT: {player.HIT}", inline: true);
+                embed.AddField("\n**Stats**\n", 
+                    $"{DiscordEmoji.FromName(ctx.Client, ":sparkling_heart:")} HP: {player.HP}\n" +
+                    $"{DiscordEmoji.FromName(ctx.Client, ":crossed_swords:")} STR: {player.STR}\n" +
+                    $"{DiscordEmoji.FromName(ctx.Client, ":bow_and_arrow:")} DEX: {player.DEX}\n" +
+                    $"{DiscordEmoji.FromName(ctx.Client, ":dash:")} SPD: {player.SPD}\n" +
+                    $"{DiscordEmoji.FromName(ctx.Client, ":crystal_ball:")} MPE: {player.MPE}\n" +
+                    $"{DiscordEmoji.FromName(ctx.Client, ":game_die:")} DHL: {player.DHL}\n" +
+                    $"{DiscordEmoji.FromName(ctx.Client, ":dart:")} HIT: {player.HIT}", inline: true);
+                
+                embed.AddField("**Equipped**",
+                    $"{DiscordEmoji.FromName(ctx.Client, ":billed_cap:")} Helmet: No Helmet\n" +
+                    $"{DiscordEmoji.FromName(ctx.Client, ":shirt:")} Chest: Shirtless\n" +
+                    $"{DiscordEmoji.FromName(ctx.Client, ":gloves:")} Gloves: Gloves are gloves\n" +
+                    $"{DiscordEmoji.FromName(ctx.Client, ":jeans:")} Legs: Pants?\n" +
+                    $"{DiscordEmoji.FromName(ctx.Client, ":athletic_shoe:")} Feet: FEET\n", inline: true);
 
                 string items = "";
 

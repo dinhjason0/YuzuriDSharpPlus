@@ -10,6 +10,14 @@ namespace Yuzuri.Commons
         public int HIT { get; set; }
         public int DEF { get; set; }
 
+        public string Desc { get; set; }
+
+        /// <summary>
+        /// Special effect of item
+        /// </summary>
+        public ItemEffect ItemEffect { get; set; }
+        public ItemCategory ItemCategory { get; set; }
+
         public Item()
         { }
 
@@ -18,6 +26,8 @@ namespace Yuzuri.Commons
             Name = name;
             HIT = hit;
             DEF = def;
+
+            ItemEffect = ItemEffect.None;
         }
 
     }
