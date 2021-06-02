@@ -76,8 +76,12 @@ namespace Yuzuri.Commands
                         .WithContent("Generated Sprite")
                         .WithFile(fstemp2)
                         .SendAsync(ctx.Channel);
+                        await Task.Delay(100);
+
+                        fstemp2.Close();
                     }
                 }
+                fs.Close();
             }
 
             File.Delete($"data/Sprite_Resources/PlayerSheet2.png");
