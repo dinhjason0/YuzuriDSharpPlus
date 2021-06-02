@@ -42,27 +42,47 @@ namespace Yuzuri.Commands
         [RequirePermissions(Permissions.Administrator)]
         public async Task Generate(CommandContext ctx)
         {
+            if (File.Exists($"data/Sprite_Resources/PlayerSheet2.png"))
+            File.Delete($"data/Sprite_Resources/PlayerSheet2.png");
+
             using var fs = new FileStream($"data/Sprite_Resources/PlayerSheet.png", FileMode.Open, FileAccess.Read);
             using MemoryStream outStream = new MemoryStream();
             using var image = Image.Load(fs);
             {
                 var pngEncoder = new PngEncoder();
+                await Task.Delay(100);
                 var clone = image.Clone(img => img
                 .Crop(new Rectangle(1, 1, 35, 35)));
                 clone.Save(outStream, pngEncoder);
+                await Task.Delay(100);
+                Console.WriteLine("Cropped Image");
 
                 using (var fstemp = new FileStream($"data/Sprite_Resources/PlayerSheet2.png", FileMode.CreateNew, FileAccess.ReadWrite))
                 {
                     outStream.Position = 0;
                     outStream.CopyTo(fstemp);
+                    await Task.Delay(100);
+                    Console.WriteLine("Generated Image");
+
+                    if (File.Exists($"data/Sprite_Resources/PlayerSheet2.png"))
+                    {
+                        Console.WriteLine("Found PlayerSheet2");
+                        fstemp.Close();
+                        var fstemp2 = new FileStream($"data/Sprite_Resources/PlayerSheet2.png", FileMode.Open, FileAccess.Read);
+                        await Task.Delay(100);
+                        Console.WriteLine("Read PlayerSheet2");
+
                         var msg = await new DiscordMessageBuilder()
                         .WithContent("Generated Sprite")
-                        .WithFile(fstemp)
+                        .WithFile(fstemp2)
                         .SendAsync(ctx.Channel);
+                    }
                 }
             }
 
             File.Delete($"data/Sprite_Resources/PlayerSheet2.png");
+            await Task.Delay(100);
+            Console.WriteLine("Deleted PlayerSheet2");
         }
 
 
