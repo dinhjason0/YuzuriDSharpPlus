@@ -38,8 +38,7 @@ namespace Yuzuri.Commons
         /// </summary>
         public int DHL { get; set; }
 
-        public Item[] Inventory { get; set; }
-        public List<int> Favourites { get; set; }
+        public List<Item> Inventory { get; set; }
         public List<int> Equipped { get; set; }
 
         public StatusEffects StatusEffects { get; set; }
@@ -64,8 +63,7 @@ namespace Yuzuri.Commons
             HIT = 1;
             DHL = 1;
 
-            Inventory = new Item[50];
-            Favourites = new List<int>();
+            Inventory = new List<Item>();
             Equipped = new List<int>();
 
             StatusEffects = StatusEffects.None;
@@ -87,32 +85,27 @@ namespace Yuzuri.Commons
             Inventory[invIndex] = item;
         }
 
-        public void GiveItem(Item item)
+        public bool GiveItem(Item item)
         {
-            Inventory[Inventory.Length] = item;
+            if (Inventory.Count >= 50) return false;
+            Inventory.Add(item);
+
+            SaveData();
+
+            return true;
         }
 
         public void RemoveItem(Item item)
         {
-            for(int i = 0; i < Inventory.Length; i++)
-            {
-                if (Inventory[i] == item)
-                {
-                    Inventory[i] = null;
-                    return;
-                }
-            }
+            Inventory.Remove(item);
+
+            SaveData();
         }
 
-        public void SetFavouriteInv(int favIndex)
+        public void SaveData()
         {
-            if (!Favourites.Contains(favIndex))
-                Favourites.Add(favIndex);
+            Bot.PlayerManager.WritePlayerData(this);
         }
 
-        public void RemoveFavouriteInv(int favIndex)
-        {
-            Favourites.Remove(favIndex);
-        }
     }
 }

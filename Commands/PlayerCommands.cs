@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Yuzuri.Commons;
+using Yuzuri.Helpers;
 
 namespace Yuzuri.Commands
 {
@@ -117,7 +118,7 @@ namespace Yuzuri.Commands
 
                 foreach (Item item in player.Inventory)
                 {
-                    if (item != null) items += $"{item.Name}\n";
+                    if (item != null) items += $"{EmojiHelper.GetItemEmoji(item.ItemCategory, ctx.Client)} {item.Name}\n";
                 }
                 if (items == "") items = "Empty";
 

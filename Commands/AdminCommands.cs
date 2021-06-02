@@ -14,6 +14,8 @@ using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Memory;
+using Yuzuri.Managers;
+using System.Linq;
 
 namespace Yuzuri.Commands
 {
@@ -21,7 +23,7 @@ namespace Yuzuri.Commands
     {
         [Command("reset")]
         [Hidden]
-        [RequirePermissions(DSharpPlus.Permissions.Administrator)]
+        [RequirePermissions(Permissions.Administrator)]
         public async Task Reset(CommandContext ctx, DiscordMember member)
         {
             Player player = Bot.PlayerManager.ReadPlayerData(member.Id);
@@ -37,32 +39,96 @@ namespace Yuzuri.Commands
 
         [Command("generate"), Description("Tests the sprite generation")]
         [Hidden]
-        [RequirePermissions(DSharpPlus.Permissions.Administrator)]
+        [RequirePermissions(Permissions.Administrator)]
         public async Task Generate(CommandContext ctx)
         {
 
             using var fs = new FileStream($"data\\Sprite_Resources\\PlayerSheet.png", FileMode.Open, FileAccess.Read);
-            using (MemoryStream outStream = new MemoryStream())
-            using (var image = Image.Load(fs))
+            using MemoryStream outStream = new MemoryStream();
+            using var image = Image.Load(fs);
             {
-                {
-                    var pngEncoder = new PngEncoder();
-                    var clone = image.Clone(img => img
-                    .Crop(new Rectangle(36, 1, 35, 35)));
-                    clone.Save(outStream, pngEncoder);
-                        var msg = await new DiscordMessageBuilder()
-                    .WithContent("Generated Sprite")
-                    .WithFile((FileStream)(Stream)outStream)
-                    .SendAsync(ctx.Channel);
-                }
+                var pngEncoder = new PngEncoder();
+                var clone = image.Clone(img => img
+                .Crop(new Rectangle(36, 1, 35, 35)));
+                clone.Save(outStream, pngEncoder);
+                var msg = await new DiscordMessageBuilder()
+            .WithContent("Generated Sprite")
+            .WithFile((FileStream)(Stream)outStream)
+            .SendAsync(ctx.Channel);
             }
         }
 
+
         [Command("reloaditems"), Description("Reloads Item Dictionary")]
+        [Hidden]
+        [RequirePermissions(Permissions.Administrator)]
         public async Task ReloadItems(CommandContext ctx)
         {
             await ctx.Channel.SendMessageAsync("Reloading Items...");
+            ItemManager.Items.Clear();
             Bot.ReloadItems();
+        }
+
+        [Command("giveitem"), Description("Gives a player an item")]
+        [Hidden]
+        [RequirePermissions(Permissions.Administrator)]
+        public async Task GiveItem(CommandContext ctx, DiscordMember user, [RemainingText] string itemName)
+        {
+            if (user.Roles.Contains(ctx.Guild.GetRole(Bot.GuildManager.ReadGuildData(ctx.Guild.Id).RoleId)))
+            {
+                Player player = Bot.PlayerManager.ReadPlayerData(user.Id);
+
+                try
+                {
+                    Console.WriteLine($"t{itemName}2");
+                    Item item = Bot.ItemManager.GetItem(itemName);
+
+                    if (player.GiveItem(item))
+                    {
+                        await ctx.Channel.SendMessageAsync($"Successfully gave {item.Name} to {player.Name}").ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        await ctx.Channel.SendMessageAsync($"{player.Name} Inventory is full!").ConfigureAwait(false);
+                    }
+                }
+                catch
+                {
+                    await ctx.Channel.SendMessageAsync("Can't find item").ConfigureAwait(false);
+                }
+            }
+            else
+            {
+                await ctx.Channel.SendMessageAsync($"{user.DisplayName} isn't a player").ConfigureAwait(false);
+            }
+        }
+
+        [Command("setstatus"), Description("Sets a player status")]
+        [Hidden]
+        [RequirePermissions(Permissions.Administrator)]
+        public async Task SetStatus(CommandContext ctx, DiscordMember user, string status)
+        {
+            if (user.Roles.Contains(ctx.Guild.GetRole(Bot.GuildManager.ReadGuildData(ctx.Guild.Id).RoleId)))
+            {
+                try
+                {
+                    Enum.TryParse(status, out StatusEffects statusEffect);
+                    Player player = Bot.PlayerManager.ReadPlayerData(user.Id);
+
+                    player.StatusEffects = statusEffect;
+                    player.SaveData();
+
+                    await ctx.Channel.SendMessageAsync($"Successfully set {player.Name} status to {statusEffect}").ConfigureAwait(false);
+                }
+                catch
+                {
+                    await ctx.Channel.SendMessageAsync("Invalid Status Effect").ConfigureAwait(false);
+                }
+            }
+            else
+            {
+                await ctx.Channel.SendMessageAsync($"{user.DisplayName} isn't a player").ConfigureAwait(false);
+            }
         }
     }
 }

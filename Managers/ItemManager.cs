@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Yuzuri.Commons;
 
@@ -26,10 +27,15 @@ namespace Yuzuri.Managers
         }
 
         public static List<Item> Items = new List<Item>();
-
+        
         public Item GetItem(string name)
         {
-            return Items.Find(i => i.Name == name);
+            foreach (Item item in Items)
+            {
+                if (string.Equals(item.Name, name, StringComparison.OrdinalIgnoreCase)) return item;
+            }
+
+            return null;
         }
     }
 }

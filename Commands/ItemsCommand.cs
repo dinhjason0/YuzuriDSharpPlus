@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Yuzuri.Commons;
+using Yuzuri.Helpers;
 using Yuzuri.Managers;
 
 namespace Yuzuri.Commands
@@ -44,10 +45,10 @@ namespace Yuzuri.Commands
                     };
 
                     embed.AddField("**Items**",
-                        $"{string.Join("\n", ItemManager.Items.GetRange(i, (i + 13 > ItemManager.Items.Count ? ItemManager.Items.Count - i : 13)).Select(i => $"{GetItemEmoji(i.ItemCategory, ctx.Client)} {i.Name}"))}");
+                        $"{string.Join("\n", ItemManager.Items.GetRange(i, (i + 13 > ItemManager.Items.Count ? ItemManager.Items.Count-i : 13)).Select(i => $"{EmojiHelper.GetItemEmoji(i.ItemCategory, ctx.Client)} {i.Name}"))}");
 
                     pages[x] = new Page("", embed);
-                    Console.WriteLine("cut");
+
                 }
 
                 await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages,
@@ -58,22 +59,6 @@ namespace Yuzuri.Commands
             {
                 Console.WriteLine(ex);
             }
-        }
-
-        private DiscordEmoji GetItemEmoji(ItemCategory category, DiscordClient client)
-        {
-            return category switch
-            {
-                ItemCategory.Helmet => DiscordEmoji.FromName(client, ":billed_cap:"),
-                ItemCategory.Chestplate => DiscordEmoji.FromName(client, ":shirt:"),
-                ItemCategory.Arms => DiscordEmoji.FromName(client, ":gloves:"),
-                ItemCategory.Leggings => DiscordEmoji.FromName(client, ":jeans:"),
-                ItemCategory.Shoes => DiscordEmoji.FromName(client, ":athletic_shoe:"),
-                ItemCategory.MainHand => DiscordEmoji.FromName(client, ":dagger:"),
-                ItemCategory.OffHand => DiscordEmoji.FromName(client, ":shield:"),
-                ItemCategory.Consumable => DiscordEmoji.FromName(client, ":wine_glass:"),
-                _ => DiscordEmoji.FromName(client, ":question:"),
-            };
         }
     }
 }
