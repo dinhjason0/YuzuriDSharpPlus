@@ -47,15 +47,23 @@ namespace Yuzuri.Commands
                     await ctx.Channel.SendMessageAsync($"Link connection has been established. Say hello to your new room {response.Result.Content}").ConfigureAwait(false);
 
                     await ctx.Member.GrantRoleAsync(playerRole).ConfigureAwait(false);
+                    try
+                    {
+                        Player player = new Player(ctx.User.Id, response.Result.Content);
 
-                    Player player = new Player(ctx.User.Id, response.Result.Content);
+                        var room = await Bot.PlayerManager.CreatePlayerRoom(ctx.Guild, player).ConfigureAwait(false);
+                        player.RoomId = room.Id;
 
-                    var room = await Bot.PlayerManager.CreatePlayerRoom(ctx.Guild, player).ConfigureAwait(false);
-                    player.RoomId = room.Id;
+                        Bot.PlayerManager.WritePlayerData(player);
 
-                    Bot.PlayerManager.WritePlayerData(player);
-
-                    await room.SendMessageAsync($"{ctx.User.Mention} welcome to your room.\nThis is your personal room where you can check the following: Inventory, Skills, Spells and Equipment.").ConfigureAwait(false);
+                        await room.SendMessageAsync($"{ctx.User.Mention} welcome to your room.\nThis is your personal room where you can check the following: Inventory, Skills, Spells and Equipment.").ConfigureAwait(false);
+                    }
+                    catch
+                    (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                    }
+                    
                 }
             }
             else
@@ -105,24 +113,29 @@ namespace Yuzuri.Commands
                     $"{DiscordEmoji.FromName(ctx.Client, ":dash:")} SPD: {player.SPD}\n" +
                     $"{DiscordEmoji.FromName(ctx.Client, ":crystal_ball:")} MPE: {player.MPE}\n" +
                     $"{DiscordEmoji.FromName(ctx.Client, ":game_die:")} DHL: {player.DHL}\n" +
-                    $"{DiscordEmoji.FromName(ctx.Client, ":dart:")} HIT: {player.HIT}", inline: true);
-                
-                embed.AddField("**Equipped**",
-                    $"{DiscordEmoji.FromName(ctx.Client, ":billed_cap:")} Helmet: No Helmet\n" +
-                    $"{DiscordEmoji.FromName(ctx.Client, ":shirt:")} Chest: Shirtless\n" +
-                    $"{DiscordEmoji.FromName(ctx.Client, ":gloves:")} Gloves: Gloves are gloves\n" +
-                    $"{DiscordEmoji.FromName(ctx.Client, ":jeans:")} Legs: Pants?\n" +
-                    $"{DiscordEmoji.FromName(ctx.Client, ":athletic_shoe:")} Feet: FEET\n", inline: true);
-
-                string items = "";
-
-                foreach (Item item in player.Inventory)
+                    $"{DiscordEmoji.FromName(ctx.Client, ":dart:")} HIT: {player.HIT}", true);
+                try
                 {
-                    if (item != null) items += $"{EmojiHelper.GetItemEmoji(item.ItemCategory, ctx.Client)} {item.Name}\n";
-                }
-                if (items == "") items = "Empty";
 
-                embed.AddField("**Inventory**", $"{items}");
+                    embed.AddField("**Equipped**",
+                        $"{DiscordEmoji.FromName(ctx.Client, ":billed_cap:")} Helmet: {player.GetItem(player.Equipped[Player.EquippedSlots.Helmet]).Name}\n" +
+                        $"{DiscordEmoji.FromName(ctx.Client, ":shirt:")} Chest: {player.GetItem(player.Equipped[Player.EquippedSlots.Chest]).Name}\n" +
+                        $"{DiscordEmoji.FromName(ctx.Client, ":gloves:")} Gloves: {player.GetItem(player.Equipped[Player.EquippedSlots.Arms]).Name}\n" +
+                        $"{DiscordEmoji.FromName(ctx.Client, ":jeans:")} Legs: {player.GetItem(player.Equipped[Player.EquippedSlots.Legs]).Name}\n" +
+                        $"{DiscordEmoji.FromName(ctx.Client, ":athletic_shoe:")} Feet: {player.GetItem(player.Equipped[Player.EquippedSlots.Shoes]).Name}\n", true);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+                embed.AddField("**Skills**", "Punch ", true);
+
+                for (int i = 0, x = 1; i < player.Inventory.Count; i += 10, x++)
+                {
+                    embed.AddField($"**Inventory - {x}**",
+                        $"{string.Join("\n", player.Inventory.GetRange(i, (i + 10 > player.Inventory.Count ? player.Inventory.Count - i : 10)).Select(i => $"{EmojiHelper.GetItemEmoji(i.ItemCategory, ctx.Client)} {i.Name}"))}", true);
+
+                }
 
                 await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
             }

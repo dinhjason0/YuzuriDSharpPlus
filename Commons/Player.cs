@@ -39,7 +39,7 @@ namespace Yuzuri.Commons
         public int DHL { get; set; }
 
         public List<Item> Inventory { get; set; }
-        public List<int> Equipped { get; set; }
+        public Dictionary<EquippedSlots, int> Equipped { get; set; }
 
         public StatusEffects StatusEffects { get; set; }
 
@@ -64,7 +64,23 @@ namespace Yuzuri.Commons
             DHL = 1;
 
             Inventory = new List<Item>();
-            Equipped = new List<int>();
+            Inventory.Add(Bot.ItemManager.GetItem("Leather Helmet"));
+            Inventory.Add(Bot.ItemManager.GetItem("Leather Tunic"));
+            Inventory.Add(Bot.ItemManager.GetItem("Leather Wrist Guards"));
+            Inventory.Add(Bot.ItemManager.GetItem("Leather Pants"));
+            Inventory.Add(Bot.ItemManager.GetItem("Leather Boots"));
+            Inventory.Add(Bot.ItemManager.GetItem("Potion"));
+
+            Equipped = new Dictionary<EquippedSlots, int>()
+            {
+                { EquippedSlots.Helmet, 0 },
+                { EquippedSlots.Chest, 1 },
+                { EquippedSlots.Arms, 2 },
+                { EquippedSlots.Legs, 3 },
+                { EquippedSlots.Shoes, 4 },
+                { EquippedSlots.MainHand, 0 },
+                { EquippedSlots.OffHand, 0 }
+            };
 
             StatusEffects = StatusEffects.None;
 
@@ -73,6 +89,11 @@ namespace Yuzuri.Commons
             DMG = 0;
             DR = 0;
             DGD = 1;
+
+            foreach (Item item in Inventory)
+            {
+                Console.WriteLine(item.Name);
+            }
         }
 
         public Item GetItem(int invIndex)
@@ -107,5 +128,15 @@ namespace Yuzuri.Commons
             Bot.PlayerManager.WritePlayerData(this);
         }
 
+        public enum EquippedSlots
+        {
+            Helmet = 0,
+            Chest = 1,
+            Arms = 2,
+            Legs = 3,
+            Shoes = 4,
+            MainHand = 5,
+            OffHand = 6
+        }
     }
 }
