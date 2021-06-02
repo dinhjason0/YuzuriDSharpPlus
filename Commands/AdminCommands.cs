@@ -42,20 +42,27 @@ namespace Yuzuri.Commands
         [RequirePermissions(Permissions.Administrator)]
         public async Task Generate(CommandContext ctx)
         {
-
-            using var fs = new FileStream($"data\\Sprite_Resources\\PlayerSheet.png", FileMode.Open, FileAccess.Read);
+            using var fs = new FileStream($"data/Sprite_Resources/PlayerSheet.png", FileMode.Open, FileAccess.Read);
             using MemoryStream outStream = new MemoryStream();
             using var image = Image.Load(fs);
             {
                 var pngEncoder = new PngEncoder();
                 var clone = image.Clone(img => img
-                .Crop(new Rectangle(36, 1, 35, 35)));
+                .Crop(new Rectangle(1, 1, 35, 35)));
                 clone.Save(outStream, pngEncoder);
-                var msg = await new DiscordMessageBuilder()
-            .WithContent("Generated Sprite")
-            .WithFile((FileStream)(Stream)outStream)
-            .SendAsync(ctx.Channel);
+
+                using (var fstemp = new FileStream($"data/Sprite_Resources/PlayerSheet2.png", FileMode.CreateNew, FileAccess.ReadWrite))
+                {
+                    outStream.Position = 0;
+                    outStream.CopyTo(fstemp);
+                        var msg = await new DiscordMessageBuilder()
+                        .WithContent("Generated Sprite")
+                        .WithFile(fstemp)
+                        .SendAsync(ctx.Channel);
+                }
             }
+
+            File.Delete($"data/Sprite_Resources/PlayerSheet2.png");
         }
 
 
