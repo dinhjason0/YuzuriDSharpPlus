@@ -48,7 +48,7 @@ namespace Yuzuri
             {
                 var discordConfig = new DiscordConfiguration
                 {
-                    Token = Debug.Token2,
+                    Token = Debug.Token,
                     TokenType = TokenType.Bot,
                     AutoReconnect = true,
                     //MinimumLogLevel = LogLevel.Debug

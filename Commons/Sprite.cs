@@ -4,33 +4,43 @@ using System.Text;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Advanced;
+using Yuzuri.Managers;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.IO;
 
 namespace Yuzuri.Commons
 {
+    //This entire management is to find png, recieve by calling SpriteSheet
     class Sprite
     {
-        public string SpritePath { get; set; }
         public Rectangle SpaceCrop { get; set; }
-        public int CoordX { get; set; }
-        public int CoordY { get; set; }
-        public Image CurrentSprite { get; set; }
+        public string SpriteName { get; set; }
+        public int[] Coordinate { get; set; }
 
-        public Sprite(ulong userID, int coordX, int coordY)
+        public Sprite()
+        { }
+
+        public Sprite(string spriteName, Rectangle rectangle, int[] coordinate)
         {
-            SpritePath = "data\\Sprite_Resources\\PlayerSheet.png";
-            //Hardcoded for now
-            SpaceCrop = new Rectangle(35, 35, 35, 35);
-            //Hardcoded :KEKW:
-            CoordX = coordX;
-            CoordY = coordY;
+            SpriteName = spriteName;
+            Coordinate = coordinate;
+            SpaceCrop = rectangle;
         }
-
         //Make a sprite differentiator between 135x135 boss sprites and 35x35 player & equipment sprites
 
-        public void SetSpritePath(ulong userID)
-        {
-            
-        }
+        //public string GetSpriteName()
+        //{
+
+        //}
+
+        //public Rectangle GetRectangle()
+        //{
+
+        //    ImageProcesserManager.CropLocation();
+        //}
+
+
 
         public void SetCurrentSprite (string spriteSheetPath)
         {
@@ -38,5 +48,11 @@ namespace Yuzuri.Commons
             //CurrentSprite = source.Clone(SpaceCrop, source.PixelFormat)
             //Well fuck me then. :shrug:
         }
+    }
+
+    public class SpriteSheetDecoder
+    {
+        public string TargetItem { get; set; }
+        public int[] Coordinates { get; set; }
     }
 }

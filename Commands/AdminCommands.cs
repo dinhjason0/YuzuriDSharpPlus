@@ -43,7 +43,7 @@ namespace Yuzuri.Commands
         public async Task Generate(CommandContext ctx)
         {
             if (File.Exists($"data/Sprite_Resources/PlayerSheet2.png"))
-            File.Delete($"data/Sprite_Resources/PlayerSheet2.png");
+                File.Delete($"data/Sprite_Resources/PlayerSheet2.png");
 
             using var fs = new FileStream($"data/Sprite_Resources/PlayerSheet.png", FileMode.Open, FileAccess.Read);
             using MemoryStream outStream = new MemoryStream();
@@ -52,7 +52,7 @@ namespace Yuzuri.Commands
                 var pngEncoder = new PngEncoder();
                 await Task.Delay(100);
                 var clone = image.Clone(img => img
-                .Crop(new Rectangle(1, 1, 35, 35)));
+                .Crop(new Rectangle(0, 0, 35, 35)));
                 clone.Save(outStream, pngEncoder);
                 await Task.Delay(100);
                 Console.WriteLine("Cropped Image");
@@ -89,6 +89,13 @@ namespace Yuzuri.Commands
             Console.WriteLine("Deleted PlayerSheet2");
         }
 
+        [Command("generatebaseplayer"), Description("Tests the sprite generation")]
+        [Hidden]
+        [RequirePermissions(Permissions.Administrator)]
+        public async Task GenerateBasePlayer(CommandContext ctx)
+        {
+            await Task.Delay(100);
+        }
 
         [Command("reloaditems"), Description("Reloads Item Dictionary")]
         [Hidden]

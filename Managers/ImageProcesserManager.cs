@@ -1,11 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Drawing;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Advanced;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Memory;
 using Yuzuri.Commons;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.IO;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 
 namespace Yuzuri.Managers
@@ -17,26 +24,37 @@ namespace Yuzuri.Managers
         //Dimensions for Sprite Sheet tiles
 
         //This class isn't exclusively "outfits", it includes stacking the torso
-        public Image PlayerSpriteSheet()
+        public Image PlayerSpriteSheet(FileStream fs)
         {
-            Image baseSpriteSheet;
             try
             {
-                baseSpriteSheet = Image.FromFile("data\\Sprite_Resources\\PlayerSheet.png");
-                return baseSpriteSheet;
+                using var image = Image.Load(fs);
+                return image;
             }
             catch (Exception)
             {
-                Console.WriteLine("\"Player Sprite Sheet\" not found!");
+                Console.WriteLine("ImageProcesserManager unable to load FileStream");
             }
             return null;
         }
 
-        
+        public Rectangle CropLocation(int coordX, int coordY)
+        {
+            int localX = 0;
+            int localy = 0;
+            if (coordX > 0)
+                localX = coordX * 35;
+            if (coordY > 0)
+                localy = coordY * 35;
+            var CropSpace = new Rectangle(localX, localy, 35, 35);
+            return CropSpace;
+        }
 
         //public Sprite OutfitStacker()
         //{
         //    return null;
         //}
     }
+
+
 }
