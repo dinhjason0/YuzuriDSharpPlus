@@ -118,11 +118,11 @@ namespace Yuzuri.Commands
                 {
 
                     embed.AddField("**Equipped**",
-                        $"{DiscordEmoji.FromName(ctx.Client, ":billed_cap:")} Helmet: {player.GetItem(player.Equipped[Player.EquippedSlots.Helmet]).Name}\n" +
-                        $"{DiscordEmoji.FromName(ctx.Client, ":shirt:")} Chest: {player.GetItem(player.Equipped[Player.EquippedSlots.Chest]).Name}\n" +
-                        $"{DiscordEmoji.FromName(ctx.Client, ":gloves:")} Gloves: {player.GetItem(player.Equipped[Player.EquippedSlots.Arms]).Name}\n" +
-                        $"{DiscordEmoji.FromName(ctx.Client, ":jeans:")} Legs: {player.GetItem(player.Equipped[Player.EquippedSlots.Legs]).Name}\n" +
-                        $"{DiscordEmoji.FromName(ctx.Client, ":athletic_shoe:")} Feet: {player.GetItem(player.Equipped[Player.EquippedSlots.Shoes]).Name}\n", true);
+                        $"{DiscordEmoji.FromName(ctx.Client, ":billed_cap:")} Helmet: {player.Equipped[Player.EquippedSlots.Helmet].Name}\n" +
+                        $"{DiscordEmoji.FromName(ctx.Client, ":shirt:")} Chest: {player.Equipped[Player.EquippedSlots.Chest].Name}\n" +
+                        $"{DiscordEmoji.FromName(ctx.Client, ":gloves:")} Gloves: {player.Equipped[Player.EquippedSlots.Arms].Name}\n" +
+                        $"{DiscordEmoji.FromName(ctx.Client, ":jeans:")} Legs: {player.Equipped[Player.EquippedSlots.Legs].Name}\n" +
+                        $"{DiscordEmoji.FromName(ctx.Client, ":athletic_shoe:")} Feet: {player.Equipped[Player.EquippedSlots.Shoes].Name}\n", true);
                 }
                 catch (Exception ex)
                 {
@@ -136,6 +136,8 @@ namespace Yuzuri.Commands
                         $"{string.Join("\n", player.Inventory.GetRange(i, (i + 10 > player.Inventory.Count ? player.Inventory.Count - i : 10)).Select(i => $"{EmojiHelper.GetItemEmoji(i.ItemCategory, ctx.Client)} {i.Name}"))}", true);
 
                 }
+
+                embed.WithFooter($"Inventory Slots: {player.Inventory.Count}/100");
 
                 await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
             }

@@ -39,8 +39,7 @@ namespace Yuzuri.Commons
         public int DHL { get; set; }
 
         public List<Item> Inventory { get; set; }
-        public Dictionary<EquippedSlots, int> Equipped { get; set; }
-
+        public Dictionary<EquippedSlots, Item> Equipped { get; set; }
         public StatusEffects StatusEffects { get; set; }
 
         public int AS { get; set; }
@@ -63,23 +62,18 @@ namespace Yuzuri.Commons
             HIT = 1;
             DHL = 1;
 
-            Inventory = new List<Item>();
-            Inventory.Add(Bot.ItemManager.GetItem("Leather Helmet"));
-            Inventory.Add(Bot.ItemManager.GetItem("Leather Tunic"));
-            Inventory.Add(Bot.ItemManager.GetItem("Leather Wrist Guards"));
-            Inventory.Add(Bot.ItemManager.GetItem("Leather Pants"));
-            Inventory.Add(Bot.ItemManager.GetItem("Leather Boots"));
-            Inventory.Add(Bot.ItemManager.GetItem("Potion"));
-
-            Equipped = new Dictionary<EquippedSlots, int>()
+            Inventory = new List<Item>
             {
-                { EquippedSlots.Helmet, 0 },
-                { EquippedSlots.Chest, 1 },
-                { EquippedSlots.Arms, 2 },
-                { EquippedSlots.Legs, 3 },
-                { EquippedSlots.Shoes, 4 },
-                { EquippedSlots.MainHand, 0 },
-                { EquippedSlots.OffHand, 0 }
+                Bot.ItemManager.GetItem("Potion")
+            };
+
+            Equipped = new Dictionary<EquippedSlots, Item>()
+            {
+                { EquippedSlots.Helmet, Bot.ItemManager.GetItem("Leather Helmet")},
+                { EquippedSlots.Chest, Bot.ItemManager.GetItem("Leather Tunic") },
+                { EquippedSlots.Arms, Bot.ItemManager.GetItem("Leather Wrist Guards") },
+                { EquippedSlots.Legs, Bot.ItemManager.GetItem("Leather Pants") },
+                { EquippedSlots.Shoes, Bot.ItemManager.GetItem("Leather Boots") }
             };
 
             StatusEffects = StatusEffects.None;
@@ -89,16 +83,38 @@ namespace Yuzuri.Commons
             DMG = 0;
             DR = 0;
             DGD = 1;
-
-            foreach (Item item in Inventory)
-            {
-                Console.WriteLine(item.Name);
-            }
         }
 
         public Item GetItem(int invIndex)
         {
             return Inventory[invIndex];
+        }
+
+        public int GetItemIndex(Item item)
+        {
+            return Inventory.FindIndex(i => string.Equals(i.Name, item.Name, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public void EquipItem(EquippedSlots slot, Item newItem)
+        {
+            //Item oldItem = Equipped[slot];
+
+            //HP -= oldItem.HP;
+            //STR -= oldItem.STR;
+            //DEX -= oldItem.DEX;
+            //SPD -= oldItem.SPD;
+            //MPE -= oldItem.MPE;
+            //HIT -= oldItem.HIT;
+            //DHL -= oldItem.DHL;
+
+            //Equipped[slot] = newItem;
+            //HP += newItem.HP;
+            //STR += newItem.STR;
+            //DEX += newItem.DEX;
+            //SPD += newItem.SPD;
+            //MPE += newItem.MPE;
+            //HIT += newItem.HIT;
+            //DHL += newItem.DHL;
         }
 
         public void SetItem(int invIndex, Item item)
