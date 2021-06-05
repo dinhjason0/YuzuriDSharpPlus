@@ -169,7 +169,7 @@ namespace Yuzuri
             Console.WriteLine("Startup checks completed.");
         }
 
-        private Task GuildCheck(DiscordGuild guild)
+        private async Task GuildCheck(DiscordGuild guild)
         {
             DateTime dateTime = DateTime.Now;
             Console.WriteLine("Performing Guild check...");
@@ -231,10 +231,10 @@ namespace Yuzuri
 
 
                         Console.WriteLine($"{guild.Name}'s Player-Rooms... 404 NOT FOUND!");
-                        Task<DiscordChannel> room = guild.CreateChannelCategoryAsync("Player-Rooms", discordOverwrite);
+                        var room = await guild.CreateChannelCategoryAsync("Player-Rooms", discordOverwrite).ConfigureAwait(false);
                         Console.WriteLine($"Generating {guild.Name}'s Player-Rooms...");
 
-                        yuzuGuild.RoomId = room.Result.Id;
+                        yuzuGuild.RoomId = room.Id;
                     }
                     if (!hasFloorsCategory)
                     {
@@ -242,10 +242,10 @@ namespace Yuzuri
                         discordOverwrite[0] = new DiscordOverwriteBuilder(guild.EveryoneRole) { Denied = Permissions.AccessChannels };
 
                         Console.WriteLine($"{guild.Name}'s Floors... 404 NOT FOUND!");
-                        Task<DiscordChannel> floor = guild.CreateChannelCategoryAsync("Floors", discordOverwrite);
+                        var floor = await guild.CreateChannelCategoryAsync("Floors", discordOverwrite).ConfigureAwait(false);
                         Console.WriteLine($"Generating {guild.Name}'s Floors...");
 
-                        yuzuGuild.FloorId = floor.Result.Id;
+                        yuzuGuild.FloorId = floor.Id;
                     }
                 }
                 else
@@ -275,10 +275,10 @@ namespace Yuzuri
                     if (!hasPlayerRole)
                     {
                         Console.WriteLine($"{guild.Name}'s Player Role... 404 NOT FOUND!");
-                        Task<DiscordRole> role = guild.CreateRoleAsync("Player");
+                        var role = await guild.CreateRoleAsync("Player").ConfigureAwait(false);
                         Console.WriteLine($"Generating {guild.Name}'s Player Role...");
 
-                        yuzuGuild.RoleId = role.Result.Id;
+                        yuzuGuild.RoleId = role.Id;
 
 
                     }
@@ -298,9 +298,6 @@ namespace Yuzuri
                 Console.WriteLine("Guild List could not be retrieved");
             }
             Console.WriteLine($"Discord Requirements check took {(DateTime.Now - dateTime).TotalSeconds} seconds");
-
-            return Task.CompletedTask;
-
         }
 
         public static void ReloadItems()
