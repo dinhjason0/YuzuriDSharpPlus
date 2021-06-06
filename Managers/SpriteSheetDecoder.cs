@@ -13,7 +13,7 @@ namespace Yuzuri.Managers
         //Finds the sprite's coordinates in the .json
         public int[] JsonDecoder(string target)
         {
-            using (System.IO.StreamReader reader = new System.IO.StreamReader($"data/Sprite_Resources/PlayerSheetAssistant.json"))
+            using (StreamReader reader = new StreamReader($"data/Sprite_Resources/PlayerSheetAssistant.json"))
             using (JsonTextReader fileContent = new JsonTextReader(reader))
             {
                 JObject o2 = (JObject)JToken.ReadFrom(fileContent);

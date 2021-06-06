@@ -44,7 +44,13 @@ namespace Yuzuri.Managers
 
         public async Task RemovePlayerRoom(DiscordGuild guild, Player player)
         {
-            await guild.GetChannel(player.RoomId).DeleteAsync().ConfigureAwait(false);
+            try
+            {
+                await guild.GetChannel(player.RoomId).DeleteAsync().ConfigureAwait(false);
+            }
+            catch
+            { }
+            
         }
     }
 }

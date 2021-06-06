@@ -36,28 +36,25 @@ namespace Yuzuri.Commands
                 embed.Description = "Hello new user, please state your name";
                 await msg.ModifyAsync(embed: embed.Build()).ConfigureAwait(false);
 
-                /*
-                await ctx.Channel.SendMessageAsync($"New arrivals, please head towards the registry table.").ConfigureAwait(false);
-                await Task.Delay(1100);
-                await ctx.Channel.SendMessageAsync($"Hello new user, please state your name").ConfigureAwait(false);
-                */
-
                 var response = await interactivity
                     .WaitForMessageAsync(x =>
                         x.Channel == ctx.Channel
                         && x.Author == ctx.User
                     ).ConfigureAwait(false);
 
-                await response.Result.DeleteAsync().ConfigureAwait(false);
+                
 
                 if (response.TimedOut)
                 {
+                    embed.Title = "Connection timed out";
                     embed.Description = "User has not responded within allocated time. Disconnecting user...";
+                    embed.Color = DiscordColor.DarkRed;
                     await msg.ModifyAsync(embed: embed.Build()).ConfigureAwait(false);
                     //await ctx.Channel.SendMessageAsync($"User has not responded within allocated time. Returning user back...").ConfigureAwait(false);
                 }
                 else
                 {
+                    await response.Result.DeleteAsync().ConfigureAwait(false);
                     embed.Title = $"Welcome {response.Result.Content}";
                     embed.Description = $"**User: {response.Result.Content}\n**" +
                         $"Permission granted. Please hold, we are currently loading your quarters.\n";
@@ -68,6 +65,7 @@ namespace Yuzuri.Commands
                         $"Permission granted. Please hold, we are currently loading your quarters.\n" +
                         $"Requesting cloud data... ";
 
+                    embed.Color = DiscordColor.Orange;
                     embed.Description = embedString;
                     await msg.ModifyAsync(embed: embed.Build()).ConfigureAwait(false);
                     await Task.Delay(600);
@@ -76,21 +74,14 @@ namespace Yuzuri.Commands
                     for (int i = 0; i < 3; i++)
                     {
                         count += rng.Next(1, 5);
-                        Console.WriteLine(count);
                         if (i == 2) count = 10;
                         embed.Description = $"{embedString}  {new string('⬛', count)}{new string('⬜', 10-count)} {10*count}%";
                         await msg.ModifyAsync(embed: embed.Build()).ConfigureAwait(false);
                         await Task.Delay(800);
                     }
 
-                    /*
-                    await ctx.Channel.SendMessageAsync($"Permission granted. Please hold, we are currently loading your quarters.").ConfigureAwait(false);
-                    await Task.Delay(1500);
-                    await ctx.Channel.SendMessageAsync($"Requesting cloud data... Permission granted. linking to profile.").ConfigureAwait(false);
-                    await Task.Delay(900);
-                    await ctx.Channel.SendMessageAsync($"Link connection has been established. Say hello to your new room {response.Result.Content}").ConfigureAwait(false);
-                    */
                     await Task.Delay(200);
+                    embed.Color = DiscordColor.Green;
                     embed.Description = $"Link connection has been established. Say hello to your new room {response.Result.Content}";
                     await msg.ModifyAsync(embed: embed.Build()).ConfigureAwait(false);
 
