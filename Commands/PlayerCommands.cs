@@ -16,6 +16,7 @@ namespace Yuzuri.Commands
 {
     public class PlayerCommands : BaseCommandModule
     {
+        private readonly Random rng = new Random();
 
         [Command("start"), Description("Start your adventure!"), Aliases("adventure")]
         public async Task Start(CommandContext ctx)
@@ -24,9 +25,22 @@ namespace Yuzuri.Commands
             {
                 var interactivity = ctx.Client.GetInteractivity();
 
-                await ctx.Channel.SendMessageAsync($"New arrivals, please head towards the registry table. ").ConfigureAwait(false);
+                var embed = new DiscordEmbedBuilder()
+                { 
+                    Title = "Weclome New User",
+                    Description = "New arrivals, please head towards the registry table."
+                };
+
+                var msg = await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
+                await Task.Delay(1300);
+                embed.Description = "Hello new user, please state your name";
+                await msg.ModifyAsync(embed: embed.Build()).ConfigureAwait(false);
+
+                /*
+                await ctx.Channel.SendMessageAsync($"New arrivals, please head towards the registry table.").ConfigureAwait(false);
                 await Task.Delay(1100);
                 await ctx.Channel.SendMessageAsync($"Hello new user, please state your name").ConfigureAwait(false);
+                */
 
                 var response = await interactivity
                     .WaitForMessageAsync(x =>
@@ -34,17 +48,51 @@ namespace Yuzuri.Commands
                         && x.Author == ctx.User
                     ).ConfigureAwait(false);
 
+                await response.Result.DeleteAsync().ConfigureAwait(false);
+
                 if (response.TimedOut)
                 {
-                    await ctx.Channel.SendMessageAsync($"User has not responded within allocated time. Returning user back...").ConfigureAwait(false);
+                    embed.Description = "User has not responded within allocated time. Disconnecting user...";
+                    await msg.ModifyAsync(embed: embed.Build()).ConfigureAwait(false);
+                    //await ctx.Channel.SendMessageAsync($"User has not responded within allocated time. Returning user back...").ConfigureAwait(false);
                 }
                 else
                 {
+                    embed.Title = $"Welcome {response.Result.Content}";
+                    embed.Description = $"**User: {response.Result.Content}\n**" +
+                        $"Permission granted. Please hold, we are currently loading your quarters.\n";
+                    await msg.ModifyAsync(embed: embed.Build()).ConfigureAwait(false);
+                    await Task.Delay(1500);
+
+                    string embedString = $"**User: {response.Result.Content}**\n" +
+                        $"Permission granted. Please hold, we are currently loading your quarters.\n" +
+                        $"Requesting cloud data... ";
+
+                    embed.Description = embedString;
+                    await msg.ModifyAsync(embed: embed.Build()).ConfigureAwait(false);
+                    await Task.Delay(600);
+
+                    int count = 0;
+                    for (int i = 0; i < 3; i++)
+                    {
+                        count += rng.Next(1, 5);
+                        Console.WriteLine(count);
+                        if (i == 2) count = 10;
+                        embed.Description = $"{embedString}  {new string('⬛', count)}{new string('⬜', 10-count)} {10*count}%";
+                        await msg.ModifyAsync(embed: embed.Build()).ConfigureAwait(false);
+                        await Task.Delay(800);
+                    }
+
+                    /*
                     await ctx.Channel.SendMessageAsync($"Permission granted. Please hold, we are currently loading your quarters.").ConfigureAwait(false);
                     await Task.Delay(1500);
                     await ctx.Channel.SendMessageAsync($"Requesting cloud data... Permission granted. linking to profile.").ConfigureAwait(false);
                     await Task.Delay(900);
                     await ctx.Channel.SendMessageAsync($"Link connection has been established. Say hello to your new room {response.Result.Content}").ConfigureAwait(false);
+                    */
+                    await Task.Delay(200);
+                    embed.Description = $"Link connection has been established. Say hello to your new room {response.Result.Content}";
+                    await msg.ModifyAsync(embed: embed.Build()).ConfigureAwait(false);
 
                     await ctx.Member.GrantRoleAsync(playerRole).ConfigureAwait(false);
                     try

@@ -118,7 +118,6 @@ namespace Yuzuri
         private async Task GuildAvailable(DiscordClient sender, GuildCreateEventArgs e)
         {
             await GuildCheck(e.Guild).ConfigureAwait(false);
-            
         }
 
         private async Task OnClientReady(DiscordClient sender, ReadyEventArgs e)
@@ -176,7 +175,6 @@ namespace Yuzuri
 
             try
             {
-
                 YuzuGuild yuzuGuild;
 
                 if (!File.Exists($"data/Guilds/{guild.Id}.json"))
