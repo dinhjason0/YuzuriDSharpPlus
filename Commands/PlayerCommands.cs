@@ -50,7 +50,6 @@ namespace Yuzuri.Commands
                     embed.Description = "User has not responded within allocated time. Disconnecting user...";
                     embed.Color = DiscordColor.DarkRed;
                     await msg.ModifyAsync(embed: embed.Build()).ConfigureAwait(false);
-                    //await ctx.Channel.SendMessageAsync($"User has not responded within allocated time. Returning user back...").ConfigureAwait(false);
                 }
                 else
                 {
@@ -73,7 +72,7 @@ namespace Yuzuri.Commands
                     int count = 0;
                     for (int i = 0; i < 3; i++)
                     {
-                        count += rng.Next(1, 5);
+                        count += rng.Next(3, 5);
                         if (i == 2) count = 10;
                         embed.Description = $"{embedString}  {new string('⬛', count)}{new string('⬜', 10-count)} {10*count}%";
                         await msg.ModifyAsync(embed: embed.Build()).ConfigureAwait(false);

@@ -117,7 +117,12 @@ namespace Yuzuri
 
         private async Task GuildAvailable(DiscordClient sender, GuildCreateEventArgs e)
         {
+            DateTime dateTime = DateTime.Now;
+            Console.WriteLine("Performing Guild check...");
+
             await GuildCheck(e.Guild).ConfigureAwait(false);
+
+            Console.WriteLine($"Discord Requirements check took {(DateTime.Now - dateTime).TotalSeconds} seconds");
         }
 
         private async Task OnClientReady(DiscordClient sender, ReadyEventArgs e)
@@ -170,9 +175,6 @@ namespace Yuzuri
 
         private async Task GuildCheck(DiscordGuild guild)
         {
-            DateTime dateTime = DateTime.Now;
-            Console.WriteLine("Performing Guild check...");
-
             try
             {
                 YuzuGuild yuzuGuild;
@@ -295,7 +297,6 @@ namespace Yuzuri
             {
                 Console.WriteLine("Guild List could not be retrieved");
             }
-            Console.WriteLine($"Discord Requirements check took {(DateTime.Now - dateTime).TotalSeconds} seconds");
         }
 
         public static void ReloadItems()
