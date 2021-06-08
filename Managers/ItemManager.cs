@@ -37,5 +37,13 @@ namespace Yuzuri.Managers
 
             return null;
         }
+
+        public void WriteItem(Item item)
+        {
+            using StreamWriter w = File.CreateText($"data/Items/{item.Name.Replace(" ", "")}.json");
+            JsonSerializer searializer = new JsonSerializer();
+            searializer.Serialize(w, item);
+            w.Close();
+        }
     }
 }

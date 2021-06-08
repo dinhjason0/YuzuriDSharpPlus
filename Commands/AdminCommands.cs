@@ -16,6 +16,7 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Memory;
 using Yuzuri.Managers;
 using System.Linq;
+using DSharpPlus.Interactivity.Extensions;
 
 namespace Yuzuri.Commands
 {
@@ -167,6 +168,124 @@ namespace Yuzuri.Commands
             {
                 await ctx.Channel.SendMessageAsync($"{user.DisplayName} isn't a player").ConfigureAwait(false);
             }
+        }
+
+        [Command("createitem"), Description("Create an item")]
+        [Hidden]
+        [RequirePermissions(Permissions.Administrator)]
+        public async Task CreateItem(CommandContext ctx, [RemainingText] string itemName)
+        {
+            await ctx.Channel.SendMessageAsync("WIP").ConfigureAwait(false);
+
+            var interactivity = ctx.Client.GetInteractivity();
+
+            Item item = new Item(itemName);
+
+            var embed = new DiscordEmbedBuilder()
+            {
+                Title = $"Create new Item: {item.Name}"
+            };
+
+            embed.AddField("Available ItemEffects", $"{string.Join("\n", (ItemEffect[])Enum.GetValues(typeof(ItemEffect)))}", true);
+            embed.AddField("Available Equippable Slots", $"{string.Join("\n", (ItemCategory[])Enum.GetValues(typeof(ItemCategory)))}", true);
+            embed.AddField("Available Rarity", $"{string.Join("\n", (Rarity[])Enum.GetValues(typeof(Rarity)))}");
+
+            embed = ItemEmbedBuilder(embed, item);
+
+            var embedMsg = await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
+
+            var response = await interactivity
+                .WaitForMessageAsync(x =>
+                    x.Channel == ctx.Channel
+                    && x.Author == ctx.User
+                ).ConfigureAwait(false);
+
+            if (response.TimedOut) return;
+            
+            while (!string.Equals("done", response.Result.Content, StringComparison.OrdinalIgnoreCase))
+            {
+                string[] responses = response.Result.Content.Split('=');
+
+                try
+                {
+                    switch (responses[0].Trim().ToUpper())
+                    {
+                        case "STR":
+                            item.STR = int.Parse(responses[1].Trim());
+                            break;
+                        case "DEX":
+                            item.DEX = int.Parse(responses[1].Trim());
+                            break;
+                        case "MPE":
+                            item.MPE = int.Parse(responses[1].Trim());
+                            break;
+                        case "DR":
+                            item.DR = int.Parse(responses[1].Trim());
+                            break;
+                        case "DESC":
+                            item.Desc = string.Join(" ", responses[1..]);
+                            break;
+                        case "ITEMEFFECT":
+                            Enum.TryParse(responses[1].Trim(), out ItemEffect itemEffect);
+                            if (item.ItemEffects.Contains(itemEffect)) item.ItemEffects.Remove(itemEffect);
+                            else item.ItemEffects.Add(itemEffect);
+
+                            if (item.ItemEffects.Count == 0) item.ItemEffects.Add(ItemEffect.None);
+                            else if (item.ItemEffects.Count > 0) item.ItemEffects.Remove(ItemEffect.None);
+                            break;
+                        case "ITEMCATEGORY":
+                            Enum.TryParse(responses[1].Trim(), out ItemCategory itemCategory);
+                            item.ItemCategory = itemCategory;
+                            break;
+                        case "RARITY":
+                            Enum.TryParse(responses[1].Trim(), out Rarity rarity);
+                            item.Rarity = rarity;
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+                
+
+                embed = ItemEmbedBuilder(embed, item);
+
+                await embedMsg.ModifyAsync(embed: embed.Build()).ConfigureAwait(false);
+
+                await response.Result.DeleteAsync().ConfigureAwait(false);
+
+                response = await interactivity
+                .WaitForMessageAsync(x =>
+                    x.Channel == ctx.Channel
+                    && x.Author == ctx.User
+                ).ConfigureAwait(false);
+            }
+
+            await ctx.Channel.SendMessageAsync($"Created Item: {item.Name}").ConfigureAwait(false);
+
+            Bot.ItemManager.WriteItem(item);
+
+        }
+
+        private DiscordEmbedBuilder ItemEmbedBuilder(DiscordEmbedBuilder embed, Item item)
+        {
+            embed.Description = $"Current Stats\n" +
+                            $"STR: {item.STR}\n" +
+                            $"MPE: {item.MPE}\n" +
+                            $"DEX: {item.DEX}\n" +
+                            $"DR: {item.DR}\n" +
+                            $"Desc: {item.Desc}\n" +
+                            $"Rarity: {item.Rarity}\n" +
+                            $"Item Category: {item.ItemCategory}\n" +
+                            $"ItemEffects: {string.Join(", ", item.ItemEffects)}";
+            
+            embed.Footer = new DiscordEmbedBuilder.EmbedFooter()
+            {
+                Text = "Reply to the message with the following format to change values E.G `STR = 10`"
+            };
+
+            return embed;
         }
     }
 }

@@ -14,6 +14,7 @@ namespace Yuzuri.Commons
         Shoes = 5,
         MainHand = 6,
         OffHand = 7,
-        Consumable = 8
+        Consumable = 8,
+        Ring = 9
     }
 }
