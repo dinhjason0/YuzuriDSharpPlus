@@ -14,7 +14,7 @@ using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.Entities;
 using Yuzuri.Commons;
-
+//Hi Veles
 
 namespace Yuzuri
 {
