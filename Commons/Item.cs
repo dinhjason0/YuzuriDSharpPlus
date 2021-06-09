@@ -51,10 +51,7 @@ namespace Yuzuri.Commons
             
             Desc = "";
 
-            ItemEffects = new List<ItemEffect>
-            {
-                ItemEffect.None
-            };
+            ItemEffects = new List<ItemEffect>();
 
             ItemCategory = ItemCategory.None;
 

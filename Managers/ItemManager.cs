@@ -34,7 +34,15 @@ namespace Yuzuri.Managers
         {
             foreach (Item item in Items)
             {
-                if (string.Equals(item.Name, name, StringComparison.OrdinalIgnoreCase)) return item;
+                if (string.Equals(item.Name, name, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (item.ItemEffects.FindAll(i => i == ItemEffect.None).Count > 1)
+                    {
+                        item.ItemEffects.RemoveAll(i => i == ItemEffect.None);
+                        item.ItemEffects.Add(ItemEffect.None);
+                    }
+                    return item;
+                }
             }
 
             return null;
@@ -46,6 +54,16 @@ namespace Yuzuri.Managers
             JsonSerializer searializer = new JsonSerializer();
             searializer.Serialize(w, item);
             w.Close();
+        }
+
+        internal void WriteNewItem(Item item, string originalName)
+        {
+            using StreamWriter w = File.CreateText($"data/Items/{item.Name.Replace(" ", "")}.json");
+            JsonSerializer searializer = new JsonSerializer();
+            searializer.Serialize(w, item);
+            w.Close();
+
+            File.Delete($"data/Items/{originalName.Replace(" ", "")}.json");
         }
     }
 }
