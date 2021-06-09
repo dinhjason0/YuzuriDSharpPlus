@@ -14,6 +14,8 @@ namespace Yuzuri.Managers
         {
             Console.WriteLine("Checking Items...");
 
+            Items.Clear();
+
             foreach (string file in Directory.GetFiles("data/Items"))
             {
                 using StreamReader r = new StreamReader(file);

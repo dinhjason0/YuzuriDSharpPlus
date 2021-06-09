@@ -145,13 +145,13 @@ namespace Yuzuri.Commands
                 };
 
                 embed.AddField("\n**Stats**\n", 
-                    $"{DiscordEmoji.FromName(ctx.Client, ":sparkling_heart:")} HP: {player.HP}\n" +
-                    $"{DiscordEmoji.FromName(ctx.Client, ":crossed_swords:")} STR: {player.STR}\n" +
-                    $"{DiscordEmoji.FromName(ctx.Client, ":bow_and_arrow:")} DEX: {player.DEX}\n" +
-                    $"{DiscordEmoji.FromName(ctx.Client, ":dash:")} SPD: {player.SPD}\n" +
-                    $"{DiscordEmoji.FromName(ctx.Client, ":crystal_ball:")} MPE: {player.MPE}\n" +
-                    $"{DiscordEmoji.FromName(ctx.Client, ":game_die:")} DHL: {player.DHL}\n" +
-                    $"{DiscordEmoji.FromName(ctx.Client, ":dart:")} HIT: {player.HIT}", true);
+                    $"{EmojiHelper.GetStatEmoji("HP", ctx.Client)} HP: {player.HP}\n" +
+                    $"{EmojiHelper.GetStatEmoji("STR", ctx.Client)} STR: {player.STR}\n" +
+                    $"{EmojiHelper.GetStatEmoji("DEX", ctx.Client)} DEX: {player.DEX}\n" +
+                    $"{EmojiHelper.GetStatEmoji("SPD", ctx.Client)} SPD: {player.SPD}\n" +
+                    $"{EmojiHelper.GetStatEmoji("MPE", ctx.Client)} MPE: {player.MPE}\n" +
+                    $"{EmojiHelper.GetStatEmoji("DHL", ctx.Client)} DHL: {player.DHL}\n" +
+                    $"{EmojiHelper.GetStatEmoji("HIT", ctx.Client)} HIT: {player.HIT}", true);
                 try
                 {
 

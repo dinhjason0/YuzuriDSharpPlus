@@ -21,7 +21,40 @@ namespace Yuzuri.Helpers
                 ItemCategory.MainHand => DiscordEmoji.FromName(client, ":dagger:"),
                 ItemCategory.OffHand => DiscordEmoji.FromName(client, ":shield:"),
                 ItemCategory.Consumable => DiscordEmoji.FromName(client, ":wine_glass:"),
-                _ => DiscordEmoji.FromName(client, ":question:"),
+                ItemCategory.Ring => DiscordEmoji.FromName(client, ":ring:"),
+                _ => DiscordEmoji.FromName(client, ":question:")
+            };
+        }
+
+        public static DiscordEmoji GetStatEmoji(string stat, DiscordClient client)
+        {
+            return stat.ToUpper() switch
+            {
+                "HP" => DiscordEmoji.FromName(client, ":sparkling_heart:"),
+                "STR" => DiscordEmoji.FromName(client, ":crossed_swords:"),
+                "DEX" => DiscordEmoji.FromName(client, ":bow_and_arrow:"),
+                "SPD" => DiscordEmoji.FromName(client, ":dash:"),
+                "MPE" => DiscordEmoji.FromName(client, ":crystal_ball:"),
+                "DHL" => DiscordEmoji.FromName(client, ":game_die:"),
+                "HIT" => DiscordEmoji.FromName(client, ":dart:"),
+                _ => DiscordEmoji.FromName(client, ":question:")
+
+            };
+        }
+
+        public static DiscordEmoji GetItemEmoji(string stat, DiscordClient client)
+        {
+            return stat.ToUpper() switch
+            {
+                "STR" => GetStatEmoji(stat, client),
+                "MPE" => GetStatEmoji(stat, client),
+                "DEX" => GetStatEmoji(stat, client),
+                "DR" => DiscordEmoji.FromName(client, ":small_red_triangle_down:"),
+                "RARITY" => DiscordEmoji.FromName(client, ":sparkles:"),
+                "DESC" => DiscordEmoji.FromName(client, ":book:"),
+                "ITEMCATEGORY" => DiscordEmoji.FromName(client, ":card_box:"),
+                "ITEMEFFECT" => DiscordEmoji.FromName(client, ":sparkler:"),
+                _ => DiscordEmoji.FromName(client, ":question:")
             };
         }
     }
