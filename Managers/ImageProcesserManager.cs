@@ -50,6 +50,24 @@ namespace Yuzuri.Managers
             return CropSpace;
         }
 
+        public List<int> SpriteDestination(string target)
+        {
+            using (StreamReader reader = new StreamReader($"data/Sprite_Resources/PlayerSheetAssistant.json"))
+            using (JsonTextReader fileContent = new JsonTextReader(reader))
+            {
+                string content = reader.ReadToEnd();
+                reader.Close();
+                Console.WriteLine("The listed coordinates are as follows:\n" + content);
+                var fullContent = (JObject)JsonConvert.DeserializeObject(content);
+                Console.WriteLine("Summoned new JObject from Player Sheet Assistant\n" + fullContent);
+                List<int> coordinates = new List<int>();
+                coordinates.Add((int)fullContent[target][0]);
+                coordinates.Add((int)fullContent[target][1]);
+                Console.WriteLine($"\n\n{target} @ Coordinates: [{coordinates[0]},{coordinates[1]}]");
+                return coordinates;
+            }
+        }
+
         //public Sprite OutfitStacker()
         //{
         //    return null;

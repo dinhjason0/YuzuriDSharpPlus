@@ -42,7 +42,7 @@ namespace Yuzuri.Commands
         [Command("generate"), Description("Tests the sprite generation")]
         [Hidden]
         [RequirePermissions(Permissions.Administrator)]
-        public async Task Generate(CommandContext ctx)
+        public async Task Generate(CommandContext ctx, [RemainingText] string target)
         {
             if (File.Exists($"data/Sprite_Resources/PlayerSheet2.png"))
                 File.Delete($"data/Sprite_Resources/PlayerSheet2.png");
@@ -91,11 +91,31 @@ namespace Yuzuri.Commands
             Console.WriteLine("Deleted PlayerSheet2");
         }
 
-        [Command("generatebaseplayer"), Description("Tests the sprite generation")]
+        [Command("findsprite"), Description("Tests sprite coordinates")]
         [Hidden]
         [RequirePermissions(Permissions.Administrator)]
-        public async Task GenerateBasePlayer(CommandContext ctx)
+        public async Task FindSprite(CommandContext ctx, [RemainingText] string spriteName)
         {
+            Console.WriteLine($"{spriteName}");
+            Sprite sprite = new Sprite(spriteName);
+            await Task.Delay(100);
+            var msg = await new DiscordMessageBuilder()
+                .WithContent("The target sprite is @ coordinate: [" + sprite.Coordinate[0] + "," + sprite.Coordinate[1] + "]")
+                .SendAsync(ctx.Channel);
+            await Task.Delay(100);
+        }
+
+        [Command("calldecoder"), Description("Test SpriteSheetDecoder")]
+        [Hidden]
+        [RequirePermissions(Permissions.Administrator)]
+        public async Task CallDecoder(CommandContext ctx)
+        {
+            Managers.ImageProcesserManager spriteSheetDecoder = new ImageProcesserManager();
+            string targetSprite = "Beauty_Dress";
+            List<int> coordinateSet = spriteSheetDecoder.SpriteDestination(targetSprite);
+            var msg = await new DiscordMessageBuilder()
+                .WithContent($"The target sprite [{targetSprite}] is @ coordinate: [{coordinateSet[0]} , {coordinateSet[1]}]")
+                .SendAsync(ctx.Channel);
             await Task.Delay(100);
         }
 
