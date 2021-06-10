@@ -18,6 +18,8 @@ using Yuzuri.Managers;
 using System.Linq;
 using DSharpPlus.Interactivity.Extensions;
 using Yuzuri.Helpers;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Yuzuri.Commands
 {
@@ -37,6 +39,7 @@ namespace Yuzuri.Commands
             await member.RevokeRoleAsync(ctx.Guild.GetRole(guild.RoleId)).ConfigureAwait(false);
 
             await ctx.Channel.SendMessageAsync($"Removed {player.Name}'s player status.");
+            //Rip coordinate list and remove player's sprite from listing
         }
 
         [Command("generate"), Description("Tests the sprite generation")]
@@ -100,7 +103,7 @@ namespace Yuzuri.Commands
             Sprite sprite = new Sprite(spriteName);
             await Task.Delay(100);
             var msg = await new DiscordMessageBuilder()
-                .WithContent("The target sprite is @ coordinate: [" + sprite.Coordinate[0] + "," + sprite.Coordinate[1] + "]")
+                .WithContent($"The [{spriteName}] is @ coordinate: [{sprite.Coordinate[0]},{sprite.Coordinate[1]}]")
                 .SendAsync(ctx.Channel);
             await Task.Delay(100);
         }
@@ -119,6 +122,99 @@ namespace Yuzuri.Commands
             await Task.Delay(100);
         }
 
+        [Command("spritedestinationtest"), Description("Test SpriteSheetDestinationList()")]
+        [Hidden]
+        [RequirePermissions(Permissions.Administrator)]
+        public async Task SpriteDestinationTest(CommandContext ctx)
+        {
+            Console.WriteLine("Trying to write command");
+            ImageProcesserManager spriteSheetDecoder = new ImageProcesserManager();
+            await Task.Delay(100);
+            List<List<int>> spriteDestinationLists = spriteSheetDecoder.SpriteDestinationList();
+            string sendMessage = "";
+            for (int i = 0; i < spriteDestinationLists.Count(); i++)
+            {
+                List<int> tempList = spriteDestinationLists[i];
+                sendMessage += $"[{tempList[0]} , {tempList[1]}]\n";
+            }
+
+            await ctx.Channel.SendMessageAsync(sendMessage);
+            await Task.Delay(100);
+        }
+
+        [Command("loadsprite"), Description("This is to test the image writing and tracking in the Sheet Assistant")]
+        [Hidden]
+        [RequirePermissions(Permissions.Administrator)]
+        public async Task LoadSprite(CommandContext ctx, DiscordMember member)
+        {
+            Console.WriteLine("Accessing loadsprite command");
+            if (member.Roles.Contains(ctx.Guild.GetRole(Bot.GuildManager.ReadGuildData(ctx.Guild.Id).RoleId)))
+            {
+                Console.WriteLine("Successfully logged player's loadsprite command");
+                string json = "";
+                Console.WriteLine(json);
+                JObject data = (JObject) JsonConvert.DeserializeObject(json);
+                Console.WriteLine(data.Value<string>());
+                //Search through PlayerSheetAssistant to see if user.Id is in Assistant.json
+                //If user.Id is found in Assistant.json
+                //Rip coordinates from .json
+                //-Locate the coordinates through the sprite-sheet
+                //--Find sprite through sheet, rip, and save as an Image/Streamwriter
+                try
+                {
+
+                    Console.WriteLine($"{member.Id}.png is attempting to be loaded");
+                    //Get .json
+                    ImageProcesserManager processerManager = new ImageProcesserManager();
+
+                    var msg = await new DiscordMessageBuilder()
+                    .WithContent("Found Target's Sprite")
+                    .WithFile(processerManager.CompoundedMessage((member.Id).ToString()))
+                    .SendAsync(ctx.Channel);
+                    await Task.Delay(100);
+                }
+                //If it isn't found, generate a new nude-player-model
+                //-Incrementally check each row for a user.Id ---- Sprite Sheet .json[0] should be linearly sorted
+                //--If open slot is available within the column, take that position in the Assist and SpriteSheet
+                //---If no open slots are available, create a new row and write it into the column
+                catch
+                {
+                    Console.WriteLine($"{member.Id}'s portrait isn't found, generating new portrait");
+                    //Get .json
+                    ImageProcesserManager processerManager = new ImageProcesserManager();
+                    var playerSheetAssistantObj = JsonConvert.DeserializeObject<SpriteCoordinate>(json);
+                    List<List<int>> spriteCoordinates = new List<List<int>>();
+                    //Read PlayerSheetAssistant.json
+                    //Pull out all coordinates into a list
+                    try
+                    {
+                            spriteCoordinates.Add(playerSheetAssistantObj.SpriteCoords);
+                    }
+                    catch
+                    {
+                        Console.WriteLine("Fuck");
+                    }
+                    //Check all x/coordinates[0] as 12 position
+                    //Return y/coordinates[1] position incrementally
+                    //If there is space before the latest, use that sprite
+
+                    var msg = await new DiscordMessageBuilder()
+                    .WithContent("Here it is!")
+                    .WithFile(processerManager.CompoundedMessage((member.Id).ToString()))
+                    .SendAsync(ctx.Channel);
+                    await Task.Delay(100);
+                }
+                //If player leaves
+                //-Locate the coordinates through the sprite-sheet
+                //--Write over the sprite in the sheet with transparency
+                //---Turn the snowflake id within the Assistant.json into "0x24+1-48sqrt(44)"
+                //----If players are named this, just boot them lmfao
+            }
+            else
+            {
+                await ctx.Channel.SendMessageAsync($"{member.DisplayName} isn't a player").ConfigureAwait(false);
+            }
+        }
         [Command("reloaditems"), Description("Reloads Item Dictionary")]
         [Hidden]
         [RequirePermissions(Permissions.Administrator)]
@@ -365,6 +461,16 @@ namespace Yuzuri.Commands
 
             
             Bot.ReloadItems();
+        }
+
+        private async Task ImageLoader(CommandContext ctx, Image img)
+        {
+            await ctx.Channel.SendMessageAsync("WIP").ConfigureAwait(false);
+            using (StreamReader reader = new StreamReader($"data/Sprite_Resources/PlayerSheetAssistant.json"))
+            using (JsonTextReader fileContent = new JsonTextReader(reader))
+            {
+
+            }
         }
     }
 }

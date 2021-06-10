@@ -19,9 +19,6 @@ namespace Yuzuri.Commons
         public string SpriteName { get; set; }
         public int[] Coordinate { get; set; }
 
-        public Sprite()
-        { }
-
         public Sprite(string spriteName)
         {
             SpriteName = spriteName;
