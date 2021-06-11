@@ -9,12 +9,11 @@ using Newtonsoft.Json;
 using Yuzuri.Managers;
 using Yuzuri.Commands;
 using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.Entities;
 using Yuzuri.Commons;
-//Hi Veles
+//Hi xVeles
 
 namespace Yuzuri
 {

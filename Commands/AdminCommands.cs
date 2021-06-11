@@ -103,7 +103,7 @@ namespace Yuzuri.Commands
             Sprite sprite = new Sprite(spriteName);
             await Task.Delay(100);
             var msg = await new DiscordMessageBuilder()
-                .WithContent($"The [{spriteName}] is @ coordinate: [{sprite.Coordinate[0]},{sprite.Coordinate[1]}]")
+                .WithContent($"The [{spriteName}] is @ coordinate: [{sprite.SpriteCoords[0]},{sprite.SpriteCoords[1]}]")
                 .SendAsync(ctx.Channel);
             await Task.Delay(100);
         }
@@ -150,26 +150,19 @@ namespace Yuzuri.Commands
             Console.WriteLine("Accessing loadsprite command");
             if (member.Roles.Contains(ctx.Guild.GetRole(Bot.GuildManager.ReadGuildData(ctx.Guild.Id).RoleId)))
             {
-                Console.WriteLine("Successfully logged player's loadsprite command");
-                string json = "";
-                Console.WriteLine(json);
-                JObject data = (JObject) JsonConvert.DeserializeObject(json);
-                Console.WriteLine(data.Value<string>());
+                ImageProcesserManager processerManager = new ImageProcesserManager();
                 //Search through PlayerSheetAssistant to see if user.Id is in Assistant.json
                 //If user.Id is found in Assistant.json
                 //Rip coordinates from .json
                 //-Locate the coordinates through the sprite-sheet
                 //--Find sprite through sheet, rip, and save as an Image/Streamwriter
-                try
+                if (processerManager.SpriteExistCheck(member.Id.ToString()))
                 {
-
                     Console.WriteLine($"{member.Id}.png is attempting to be loaded");
                     //Get .json
-                    ImageProcesserManager processerManager = new ImageProcesserManager();
-
                     var msg = await new DiscordMessageBuilder()
                     .WithContent("Found Target's Sprite")
-                    .WithFile(processerManager.CompoundedMessage((member.Id).ToString()))
+                    .WithFile(processerManager.CompoundedMessage(member.Id.ToString()))
                     .SendAsync(ctx.Channel);
                     await Task.Delay(100);
                 }
@@ -177,26 +170,69 @@ namespace Yuzuri.Commands
                 //-Incrementally check each row for a user.Id ---- Sprite Sheet .json[0] should be linearly sorted
                 //--If open slot is available within the column, take that position in the Assist and SpriteSheet
                 //---If no open slots are available, create a new row and write it into the column
-                catch
+                else
                 {
                     Console.WriteLine($"{member.Id}'s portrait isn't found, generating new portrait");
                     //Get .json
-                    ImageProcesserManager processerManager = new ImageProcesserManager();
-                    var playerSheetAssistantObj = JsonConvert.DeserializeObject<SpriteCoordinate>(json);
-                    List<List<int>> spriteCoordinates = new List<List<int>>();
+                    ImageProcesserManager spriteSheetDecoder = new ImageProcesserManager();
+                    await Task.Delay(100);
+                    List<string> spriteNames = spriteSheetDecoder.SpriteNames();
+                    List<Sprite> playerSpriteDestinationLists = new List<Sprite>();
                     //Read PlayerSheetAssistant.json
                     //Pull out all coordinates into a list
-                    try
+                    for (int i = 0; i < spriteNames.Count(); i++)
                     {
-                            spriteCoordinates.Add(playerSheetAssistantObj.SpriteCoords);
+                        Sprite storedSprite = new Sprite(spriteNames[i]);
+                        Console.WriteLine(storedSprite.SpriteName);
+                        if (storedSprite.GetSpriteCoordX() == 12)
+                        {
+                            playerSpriteDestinationLists.Add(storedSprite);
+                            Console.WriteLine($"{storedSprite.GetSpriteName()} was added to Player Sprite Destination Lists");
+                        }
                     }
-                    catch
+                    Console.WriteLine($"\nPlayer Sprite Destination Lists For Players:");
+                    if (playerSpriteDestinationLists.Count() != 0)
+                        foreach (Sprite spritedata in playerSpriteDestinationLists)
+                        {
+                            Console.WriteLine($"{spritedata.GetSpriteName()}");
+                        }
+                    else
                     {
-                        Console.WriteLine("Fuck");
+                        Console.WriteLine("LOL THERE ARE NONE");
                     }
+                    Console.WriteLine();
                     //Check all x/coordinates[0] as 12 position
                     //Return y/coordinates[1] position incrementally
-                    //If there is space before the latest, use that sprite
+                    //If there is "available__loading" before the latest, use that sprite
+                    List<int> borrowedCoords = new List<int>();
+                    if (playerSpriteDestinationLists.Count() != 0)
+                        for (int i = 0; i < playerSpriteDestinationLists.Count(); i++)
+                        {
+                            if (playerSpriteDestinationLists[i].SpriteName == "available__loading")
+                            {
+                                borrowedCoords = playerSpriteDestinationLists[i].SpriteCoords;
+                                processerManager.AddPlayerSpriteInfo(playerSpriteDestinationLists[i].SpriteName);
+                                break;
+                            }
+
+                            if (i == playerSpriteDestinationLists.Count() - 1)
+                            {
+                                borrowedCoords.Add(playerSpriteDestinationLists[i].SpriteCoords[0]);
+                                borrowedCoords.Add(playerSpriteDestinationLists[i].SpriteCoords[1] + 1);
+                                processerManager.AddPlayerSpriteInfo(member.Id.ToString(), borrowedCoords);
+                                break;
+                            }
+                        }
+                    else
+                    {
+                        borrowedCoords.Add(12);
+                        borrowedCoords.Add(0);
+                        processerManager.AddPlayerSpriteInfo(member.Id.ToString(), borrowedCoords);
+                    }
+                    //If there is no "available__loading" within the limit, create a new coordinate set for that sprite
+                    spriteSheetDecoder.WriteToSrpiteSheet("Belt_Pants_Tall_Male", borrowedCoords);
+                    spriteSheetDecoder.WriteToSrpiteSheet("Naked_Torso", borrowedCoords);
+                    spriteSheetDecoder.WriteToSrpiteSheet("Bald_Head", borrowedCoords);
 
                     var msg = await new DiscordMessageBuilder()
                     .WithContent("Here it is!")

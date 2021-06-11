@@ -1,89 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Advanced;
+﻿using System.Collections.Generic;
 using Yuzuri.Managers;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System.IO;
-using System.Linq;
 
 namespace Yuzuri.Commons
 {
-    //This entire management is to find png, recieve by calling SpriteSheet
-    class Sprite
+    public class Sprite
     {
-        public Rectangle SpaceCrop { get; set; }
         public string SpriteName { get; set; }
-        public int[] Coordinate { get; set; }
+        public List<int> SpriteCoords { get; set; }
 
-        public Sprite(string spriteName)
+        public Sprite(string name)
         {
-            SpriteName = spriteName;
-            Coordinate = JsonDecoder(SpriteName);
+            SpriteName = name;
+            ImageProcesserManager imageProcesser = new ImageProcesserManager();
+            SpriteCoords = imageProcesser.SpriteDestination(name);
         }
 
-        public Sprite(string spriteName, Rectangle rectangle, int[] coordinate)
+        public string GetSpriteName()
         {
-            SpriteName = spriteName;
-            Coordinate = coordinate;
-            SpaceCrop = rectangle;
-        }
-        //Make a sprite differentiator between 135x135 boss sprites and 35x35 player & equipment sprites
-
-        //public string GetSpriteName()
-        //{
-
-        //}
-
-        //public Rectangle GetRectangle()
-        //{
-
-        //    ImageProcesserManager.CropLocation();
-        //}
-
-
-
-        public void SetCurrentSprite(string spriteSheetPath)
-        {
-            //Bitmap source = Image.FromFile(spriteSheetPath) as Bitmap;
-            //CurrentSprite = source.Clone(SpaceCrop, source.PixelFormat)
-            //Well fuck me then. :shrug:
+            return SpriteName;
         }
 
-
-        //Finds the sprite's coordinates in .json
-        public int[] JsonDecoder(string target)
+        public List<int> GetSpriteCoords()
         {
-            using (System.IO.StreamReader reader = new System.IO.StreamReader($"data/Sprite_Resources/PlayerSheetAssistant.json"))
-            using (JsonTextReader fileContent = new JsonTextReader(reader))
-            {
-                JObject o2 = (JObject)JToken.ReadFrom(fileContent);
-                Console.WriteLine("Found Json File Content");
+            return SpriteCoords;
+        }
 
-                string stringedJObject = JsonConvert.ToString(o2);
-                Console.WriteLine("Stringed Object\n" + stringedJObject);
+        public int GetSpriteCoordX()
+        {
+            return SpriteCoords[0];
+        }
 
-                var dataJObject = (JObject)JsonConvert.DeserializeObject(stringedJObject);
-                Console.WriteLine(dataJObject);
-                //dynamic results = JsonConvert.DeserializeObject<dynamic>(stringedJObject);
-                JArray jsonObject = JArray.Parse(stringedJObject);
-
-
-                int[] sendingCoordinates = jsonObject[0][target].Values<int>().ToArray();
-                return sendingCoordinates;
-
-                //catch
-                //{
-                //    if (target.Length == 18)
-                //    {
-                //        return null;
-                //    }
-                //    return null;
-                //}
-            }
+        public int GetSpriteCoordY()
+        {
+            return SpriteCoords[1];
         }
     }
 }

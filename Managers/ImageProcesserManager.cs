@@ -2,18 +2,13 @@
 using System.Collections.Generic;
 using System.Text;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Memory;
 using Yuzuri.Commons;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using System.IO;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Yuzuri.Managers
@@ -24,19 +19,59 @@ namespace Yuzuri.Managers
     {
         //Dimensions for Sprite Sheet tiles
 
-        //This class isn't exclusively "outfits", it includes stacking the torso
-        public Image PlayerSpriteSheet(FileStream fs)
+        public void RemovePlayerSpriteInfo(Player player)
         {
-            try
+            using StreamReader r = new StreamReader($"data/Sprite_Resources/PlayerSheetAssistant.json");
+            string json = r.ReadToEnd();
+            r.Close();
+            StringBuilder jsonBuild = new StringBuilder(r.ReadToEnd());
+            jsonBuild.Replace(player.UserId.ToString(), "available__loading");
+            json = jsonBuild.ToString();
+            Console.WriteLine($"\n{json}\n");
+            File.WriteAllText(@"data/Sprite_Resources/PlayerSheetAssistant.json", json);
+        }
+
+        public void AddPlayerSpriteInfo(string player)
+        {
+            using StreamReader r = new StreamReader($"data/Sprite_Resources/PlayerSheetAssistant.json");
+            string json = r.ReadToEnd();
+            r.Close();
+            string[] checkToSpace = json.Split("\n");
+            for (int i = 0; i < checkToSpace.Length; i++)
             {
-                using var image = Image.Load(fs);
-                return image;
+                if (checkToSpace[i] == "available__loading")
+                {
+                    checkToSpace[i] = player;
+                    json = "";
+                    foreach (string str in checkToSpace)
+                    {
+                        json += $"{str}\n";
+                    }
+                    break;
+                }
             }
-            catch (Exception)
+            Console.WriteLine($"\n{json}\n");
+            File.WriteAllText(@"data/Sprite_Resources/PlayerSheetAssistant.json", json);
+        }
+        
+        public void AddPlayerSpriteInfo(string player, List<int> playerCoords)
+        {
+            using StreamReader r = new StreamReader($"data/Sprite_Resources/PlayerSheetAssistant.json");
+            string json = r.ReadToEnd();
+            r.Close();
+            string[] checkToSpace = json.Split("\n");
+            json = "";
+            for (int i = 0; i < checkToSpace.Length; i++)
             {
-                Console.WriteLine("ImageProcesserManager unable to load FileStream");
+                if (i == checkToSpace.Length - 2)
+                    json += $"{checkToSpace[i].Replace("\r", ",")}\n\t\"{player}\": [ {playerCoords[0]} , {playerCoords[1]} ]\n";
+                else if (i == checkToSpace.Length - 1)
+                    json += $"}}";
+                else
+                    json += $"{checkToSpace[i]}\n";
             }
-            return null;
+            Console.WriteLine($"\n{json}\n");
+            File.WriteAllText(@"data/Sprite_Resources/PlayerSheetAssistant.json", json);
         }
 
         public FileStream CompoundedMessage (string target)
@@ -60,19 +95,42 @@ namespace Yuzuri.Managers
                     outStream.CopyTo(fstemp);
                     Console.WriteLine("Generated Image");
 
-                    if (File.Exists($"data/Sprite_Resources/PlayerSheet2.png"))
+                    while (File.Exists($"data/Sprite_Resources/PlayerSheet2.png"))
                     {
                         Console.WriteLine("Found PlayerSheet2");
                         fstemp.Close();
                         var fstemp2 = new FileStream($"data/Sprite_Resources/{target}temp.png", FileMode.Open, FileAccess.Read);
-                        Console.WriteLine("Read PlayerSheet2");
+                        Console.WriteLine($"Read {target}");
 
                         return fstemp2;
                     }
                 }
                 return null;
             }
+        }
 
+        public void WriteToSrpiteSheet(string target, List<int> coordinates)
+        {
+            using var fs = new FileStream($"data/Sprite_Resources/PlayerSheet.png", FileMode.Open, FileAccess.Read);
+            using MemoryStream outStream = new MemoryStream();
+            using var image = Image.Load(fs);
+            {
+                var pngEncoder = new PngEncoder();
+                var clone = image.Clone(img => img
+                .Crop(CropLocation(target)));
+                clone.Save(outStream, pngEncoder);
+                Console.WriteLine("Cropped Image");
+                int localX = 0;
+                int localY = 0;
+                if (coordinates[0] > 0)
+                    localX = coordinates[0] * 35;
+                if (coordinates[1] > 0)
+                    localY = coordinates[1] * 35;
+                Point point = new Point(localX, localY);
+                Size size = new Size(localX + 34, localY + 34);
+                image.Mutate(image => image.Resize(size));
+                image.Mutate(clone => clone.DrawImage(image, point, 100));
+            }
         }
 
         public Rectangle CropLocation(string target)
@@ -115,7 +173,7 @@ namespace Yuzuri.Managers
                 List<int> coordinates = new List<int>();
                 coordinates.Add((int)fullContent[target][0]);
                 coordinates.Add((int)fullContent[target][1]);
-                Console.WriteLine($"\n\n{target} @ Coordinates: [{coordinates[0]},{coordinates[1]}]");
+                Console.WriteLine($"{target} @ Coordinates: [{coordinates[0]},{coordinates[1]}]\n\n");
                 return coordinates;
             }
         }
@@ -132,6 +190,33 @@ namespace Yuzuri.Managers
                 var contentListing = content.Split('\n');
                 for (var i = 0; i < contentListing.Length; i++)
                 {
+                    var matches = Regex.Matches(contentListing[i], "\"([^}]+)\"");
+                    foreach (Match match in matches)
+                    {
+                        contentListing[i] = match.Groups[1].Value;
+                    }
+                    Console.WriteLine(contentListing[i]);
+                    if (contentListing[i] == "{\r" || contentListing[i] == "}" || contentListing[i] == "{" || contentListing[i] == "}\r" || contentListing[i] == "}\n")
+                    { }
+                    else
+                        value.Add(SpriteDestination(contentListing[i]));
+                }
+                return value;
+            }
+        }
+
+        public List<string> SpriteNames()
+        {
+            using (StreamReader reader = new StreamReader($"data/Sprite_Resources/PlayerSheetAssistant.json"))
+            using (JsonTextReader fileContent = new JsonTextReader(reader))
+            {
+                List<string> value = new List<string>();
+                string content = reader.ReadToEnd();
+                reader.Close();
+                Console.WriteLine("The listed coordinates are as follows:\n" + content + "\n\n");
+                var contentListing = content.Split('\n');
+                for (var i = 0; i < contentListing.Length; i++)
+                {
 
                     var matches = Regex.Matches(contentListing[i], "\"([^}]+)\"");
                     foreach (Match match in matches)
@@ -140,41 +225,33 @@ namespace Yuzuri.Managers
                     }
                     Console.WriteLine(contentListing[i]);
                     if (contentListing[i] == "{\r" || contentListing[i] == "}")
-                    {}
+                    { }
                     else
-                    value.Add(SpriteDestination(contentListing[i]));
+                        value.Add(contentListing[i]);
                 }
                 return value;
             }
         }
-    }
 
-    public class SpriteCoordinate
-    {
-        public string SpriteName { get; set; }
-        public List<int> SpriteCoords { get; set; }
-        //public int AxisX { get; set; }
-        //public int AxisY { get; set; }
+        public bool SpriteExistCheck(string target)
+        {
+            List<string> listToCheck = SpriteNames();
+            foreach(string str in listToCheck)
+            {
+                if (target == str)
+                    return true;
+            }
+            return false;
+        }
 
-        //public SpriteCoordinate()
-        //{
-        //    SpriteName = null;
-        //    AxisX = 0;
-        //    AxisY = 0;
-        //}
+        public void ResizePlayerSheetAssistant(List<int> borrowCoords)
+        {
+            using var fs = new FileStream($"data/Sprite_Resources/PlayerSheet.png", FileMode.Open, FileAccess.Read);
+            using MemoryStream outStream = new MemoryStream();
+            using var image = Image.Load(fs);
+            {
 
-        //public SpriteCoordinate(int publicX, int publicY)
-        //{
-        //    SpriteName = null;
-        //    AxisX = publicX;
-        //    AxisY = publicY;
-        //}
-
-        //public SpriteCoordinate(string spriteName, int publicX, int publicY)
-        //{
-        //    SpriteName = spriteName;
-        //    AxisX = publicX;
-        //    AxisY = publicY;
-        //}
+            }
+        }
     }
 }
