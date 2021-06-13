@@ -4,12 +4,14 @@ using System.Text;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Advanced;
 using Yuzuri.Commons;
 using System.IO;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Yuzuri.Managers
 {
@@ -64,7 +66,7 @@ namespace Yuzuri.Managers
             for (int i = 0; i < checkToSpace.Length; i++)
             {
                 if (i == checkToSpace.Length - 2)
-                    json += $"{checkToSpace[i].Replace("\r", ",")}\n\t\"{player}\": [ {playerCoords[0]} , {playerCoords[1]} ]\n";
+                    json += $"{checkToSpace[i].Replace("\r", ",")},\n\t\"{player}\": [ {playerCoords[0]} , {playerCoords[1]} ]\n";
                 else if (i == checkToSpace.Length - 1)
                     json += $"}}";
                 else
@@ -119,6 +121,7 @@ namespace Yuzuri.Managers
                 var clone = image.Clone(img => img
                 .Crop(CropLocation(target)));
                 clone.Save(outStream, pngEncoder);
+                outStream.Close();
                 Console.WriteLine("Cropped Image");
                 int localX = 0;
                 int localY = 0;
@@ -127,10 +130,9 @@ namespace Yuzuri.Managers
                 if (coordinates[1] > 0)
                     localY = coordinates[1] * 35;
                 Point point = new Point(localX, localY);
-                Size size = new Size(localX + 34, localY + 34);
-                image.Mutate(image => image.Resize(size));
                 image.Mutate(clone => clone.DrawImage(image, point, 100));
             }
+            fs.Close();
         }
 
         public Rectangle CropLocation(string target)
@@ -246,11 +248,33 @@ namespace Yuzuri.Managers
 
         public void ResizePlayerSheetAssistant(List<int> borrowCoords)
         {
-            using var fs = new FileStream($"data/Sprite_Resources/PlayerSheet.png", FileMode.Open, FileAccess.Read);
-            using MemoryStream outStream = new MemoryStream();
-            using var image = Image.Load(fs);
+            using var fs = new FileStream($"data/Sprite_Resources/PlayWith.png", FileMode.OpenOrCreate, FileAccess.ReadWrite);
+            if (borrowCoords[0] == 0)
+                borrowCoords[0] = 1;
+            else borrowCoords[0] *= 35;
+            if (borrowCoords[1] == 0)
+                borrowCoords[1] = 1;
+            else borrowCoords[1] *= 35;
+            using Image<Rgba32> image = new Image<Rgba32>(borrowCoords[0], borrowCoords[1]);
+            using Image<Rgba32> imageSets = Image.Load<Rgba32>("data/Sprite_Resources/PlayerSheet.png");
             {
+                var png = new PngEncoder();
+                image.Mutate(o => o.DrawImage(imageSets, new Point(0, 0), 1f));
+                image.Save(fs, png);
 
+                              //using var image = new Image<Rgba32>(borrowCoords[0], borrowCoords[1]);
+                              //{
+                              //    Console.WriteLine("Loaded ResizePlayerSheetAssistant");
+                              //    var png = new PngEncoder();
+                              //    Console.WriteLine("Loaded Image in ResizePlayerSheetAssistant");
+
+                    //    var drawOver = Image.Load<Rgba32>(fs);
+                    //    image.Mutate(i => i.DrawImage(drawOver, 100));
+                    //    Console.WriteLine($"Image Width: {image.Width}");
+                    //    Console.WriteLine($"Image Height: {image.Height}");
+                    //    image.Save(fs, png);
+                    //    fs.Close();
+                    //}
             }
         }
     }

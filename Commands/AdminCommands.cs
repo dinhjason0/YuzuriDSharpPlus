@@ -5,21 +5,17 @@ using DSharpPlus.Entities;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using Yuzuri.Commons;
 
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Memory;
 using Yuzuri.Managers;
 using System.Linq;
 using DSharpPlus.Interactivity.Extensions;
 using Yuzuri.Helpers;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Yuzuri.Commands
 {
@@ -228,6 +224,13 @@ namespace Yuzuri.Commands
                         borrowedCoords.Add(12);
                         borrowedCoords.Add(0);
                         processerManager.AddPlayerSpriteInfo(member.Id.ToString(), borrowedCoords);
+                        List<List<int>> sprDesLi = spriteSheetDecoder.SpriteDestinationList();
+                        foreach (List<int> lint in sprDesLi)
+                        {
+                            if (borrowedCoords[1] < lint[1])
+                                borrowedCoords[1] = lint[1];
+                        }
+                        processerManager.ResizePlayerSheetAssistant(borrowedCoords);
                     }
                     //If there is no "available__loading" within the limit, create a new coordinate set for that sprite
                     spriteSheetDecoder.WriteToSrpiteSheet("Belt_Pants_Tall_Male", borrowedCoords);
@@ -251,6 +254,20 @@ namespace Yuzuri.Commands
                 await ctx.Channel.SendMessageAsync($"{member.DisplayName} isn't a player").ConfigureAwait(false);
             }
         }
+
+        [Command("playwithimgsize"), Description("Reloads Item Dictionary")]
+        [Hidden]
+        [RequirePermissions(Permissions.Administrator)]
+        public async Task PlayWithImgSize(CommandContext ctx)
+        {
+            List<int> coordssetinteger = new List<int>();
+            coordssetinteger.Add(12);
+            coordssetinteger.Add(12);
+            ImageProcesserManager imageProcess = new ImageProcesserManager();
+            imageProcess.ResizePlayerSheetAssistant(coordssetinteger);
+            await Task.Delay(100);
+        }
+
         [Command("reloaditems"), Description("Reloads Item Dictionary")]
         [Hidden]
         [RequirePermissions(Permissions.Administrator)]
