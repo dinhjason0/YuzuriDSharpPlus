@@ -145,6 +145,7 @@ namespace Yuzuri.Commands
         [RequirePermissions(Permissions.Administrator)]
         public async Task LoadSprite(CommandContext ctx, DiscordMember member)
         {
+            await ctx.TriggerTypingAsync().ConfigureAwait(false);
             Console.WriteLine("Accessing loadsprite command");
             if (member.Roles.Contains(ctx.Guild.GetRole(Bot.GuildManager.ReadGuildData(ctx.Guild.Id).RoleId)))
             {
@@ -158,10 +159,13 @@ namespace Yuzuri.Commands
                 {
                     Console.WriteLine($"{member.Id}.png is attempting to be loaded");
                     //Get .json
-                    var msg = await new DiscordMessageBuilder()
-                    .WithContent("Found Target's Sprite")
-                    .WithFile(processerManager.CompoundedMessage(member.Id.ToString()))
+                    FileStream file = processerManager.CompoundedMessage((member.Id).ToString());
+                    await new DiscordMessageBuilder()
+                    .WithContent("Generated Sprite")
+                    .WithFile(file)
                     .SendAsync(ctx.Channel);
+                    file.Close();
+                    File.Delete($"data/Sprite_Resources/{member.Id}temp.png");
                     await Task.Delay(100);
                 }
                 //If it isn't found, generate a new nude-player-model
@@ -233,17 +237,22 @@ namespace Yuzuri.Commands
                                 borrowedCoords[1] = lint[1];
                         }
                         processerManager.ResizePlayerSheetAssistant(borrowedCoords);
-                        borrowedCoords[1] = 0;
+                        borrowedCoords = processerManager.SpriteDestination(member.Id.ToString());
                     }
                     //If there is no "available__loading" within the limit, create a new coordinate set for that sprite
                     spriteSheetDecoder.WriteToSrpiteSheet("Belt_Pants_Tall_Male", borrowedCoords);
                     spriteSheetDecoder.WriteToSrpiteSheet("Naked_Torso", borrowedCoords);
                     spriteSheetDecoder.WriteToSrpiteSheet("Bald_Head", borrowedCoords);
 
-                    var msg = await new DiscordMessageBuilder()
+                    FileStream file = processerManager.CompoundedMessage((member.Id).ToString());
+
+                    await new DiscordMessageBuilder()
                     .WithContent("Here it is!")
-                    .WithFile(processerManager.CompoundedMessage((member.Id).ToString()))
+                    .WithFile(file)
                     .SendAsync(ctx.Channel);
+                    file.Close();
+                    File.Delete($"data/Sprite_Resources/{member.Id}temp.png");
+                    processerManager.CompoundedMessage(member.Id.ToString()).Close();
                     await Task.Delay(100);
                 }
                 //If player leaves

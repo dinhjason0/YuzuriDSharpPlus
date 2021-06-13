@@ -84,30 +84,20 @@ namespace Yuzuri.Managers
             using var fs = new FileStream($"data/Sprite_Resources/PlayerSheet.png", FileMode.Open, FileAccess.Read);
             using MemoryStream outStream = new MemoryStream();
             using var image = Image.Load(fs);
+            using (var fstemp = new FileStream($"data/Sprite_Resources/{target}temp.png", FileMode.CreateNew, FileAccess.ReadWrite))
             {
                 var pngEncoder = new PngEncoder();
                 var clone = image.Clone(img => img
                 .Crop(CropLocation(target)));
                 clone.Save(outStream, pngEncoder);
                 Console.WriteLine("Cropped Image");
-
-                using (var fstemp = new FileStream($"data/Sprite_Resources/{target}temp.png", FileMode.CreateNew, FileAccess.ReadWrite))
-                {
                     outStream.Position = 0;
                     outStream.CopyTo(fstemp);
                     Console.WriteLine("Generated Image");
-
-                    while (File.Exists($"data/Sprite_Resources/PlayerSheet2.png"))
-                    {
-                        Console.WriteLine("Found PlayerSheet2");
-                        fstemp.Close();
-                        var fstemp2 = new FileStream($"data/Sprite_Resources/{target}temp.png", FileMode.Open, FileAccess.Read);
-                        Console.WriteLine($"Read {target}");
-
-                        return fstemp2;
-                    }
-                }
-                return null;
+                    fstemp.Close();
+                    var fstemp2 = new FileStream($"data/Sprite_Resources/{target}temp.png", FileMode.Open, FileAccess.Read);
+                    Console.WriteLine($"Read {target}");
+                return fstemp2;
             }
         }
 
@@ -115,18 +105,10 @@ namespace Yuzuri.Managers
         {
             using var image = Image.Load<Rgba32>($"data/Sprite_Resources/PlayerSheet.png");
             using var fs = new FileStream($"data/Sprite_Resources/PlayerSheet.png", FileMode.OpenOrCreate, FileAccess.ReadWrite);
+            using Image<Rgba32> clone = image.Clone<Rgba32>(i => i.Crop(CropLocation(target)));
             {
                 var pngEncoder = new PngEncoder();
-                Image<Rgba32> clone = image.Clone(img => img
-                .Crop(CropLocation(target)));
-                Console.WriteLine("Cropped Image");
-                int localX = 0;
-                int localY = 0;
-                if (coordinates[0] > 0)
-                    localX = coordinates[0] * 35 - 34;
-                if (coordinates[1] > 0)
-                    localY = coordinates[1] * 35 - 34;
-                image.Mutate(o => o.DrawImage(clone, new Point(localX, localY), 1f));
+                image.Mutate(o => o.DrawImage(clone, new Point(coordinates[0]*35, coordinates[1]*35), 1f));
                 image.Save(fs, pngEncoder);
                 fs.Close();
             }
@@ -247,7 +229,7 @@ namespace Yuzuri.Managers
         {
             using Image<Rgba32> imageSets = Image.Load<Rgba32>("data/Sprite_Resources/PlayerSheet.png");
             using var fs = new FileStream($"data/Sprite_Resources/PlayerSheet.png", FileMode.OpenOrCreate, FileAccess.ReadWrite);
-            borrowCoords[0] = (borrowCoords[0] + 1) * 35;
+            borrowCoords[0] = (borrowCoords[0]+ 1) * 35;
             borrowCoords[1] = (borrowCoords[1]+ 1) * 35;
             using Image<Rgba32> image = new Image<Rgba32>(borrowCoords[0], borrowCoords[1]);
             {
