@@ -52,8 +52,10 @@ namespace Yuzuri.Commands
             {
                 var pngEncoder = new PngEncoder();
                 await Task.Delay(100);
+                ImageProcesserManager imageProcesserManager = new ImageProcesserManager();
+                Rectangle rec = imageProcesserManager.CropLocation(target);
                 var clone = image.Clone(img => img
-                .Crop(new Rectangle(0, 0, 35, 35)));
+                .Crop(rec));
                 clone.Save(outStream, pngEncoder);
                 await Task.Delay(100);
                 Console.WriteLine("Cropped Image");
@@ -231,6 +233,7 @@ namespace Yuzuri.Commands
                                 borrowedCoords[1] = lint[1];
                         }
                         processerManager.ResizePlayerSheetAssistant(borrowedCoords);
+                        borrowedCoords[1] = 0;
                     }
                     //If there is no "available__loading" within the limit, create a new coordinate set for that sprite
                     spriteSheetDecoder.WriteToSrpiteSheet("Belt_Pants_Tall_Male", borrowedCoords);

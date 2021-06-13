@@ -69,11 +69,11 @@ namespace Yuzuri.Commons
 
             Equipped = new Dictionary<EquippedSlots, Item>()
             {
-                { EquippedSlots.Helmet, Bot.ItemManager.GetItem("Leather Helmet")},
-                { EquippedSlots.Chest, Bot.ItemManager.GetItem("Leather Tunic") },
-                { EquippedSlots.Arms, Bot.ItemManager.GetItem("Leather Wrist Guards") },
-                { EquippedSlots.Legs, Bot.ItemManager.GetItem("Leather Pants") },
-                { EquippedSlots.Shoes, Bot.ItemManager.GetItem("Leather Boots") }
+                //{ EquippedSlots.Helmet, Bot.ItemManager.GetItem("Leather Helmet")},
+                //{ EquippedSlots.Chest, Bot.ItemManager.GetItem("Leather Tunic") },
+                //{ EquippedSlots.Arms, Bot.ItemManager.GetItem("Leather Wrist Guards") },
+                //{ EquippedSlots.Legs, Bot.ItemManager.GetItem("Leather Pants") },
+                //{ EquippedSlots.Shoes, Bot.ItemManager.GetItem("Leather Boots") }
             };
 
             StatusEffects = StatusEffects.None;

@@ -66,7 +66,7 @@ namespace Yuzuri.Managers
             for (int i = 0; i < checkToSpace.Length; i++)
             {
                 if (i == checkToSpace.Length - 2)
-                    json += $"{checkToSpace[i].Replace("\r", ",")},\n\t\"{player}\": [ {playerCoords[0]} , {playerCoords[1]} ]\n";
+                    json += $"{checkToSpace[i].Replace("\r", "")},\n\t\"{player}\": [ {playerCoords[0]} , {playerCoords[1]} ]\n";
                 else if (i == checkToSpace.Length - 1)
                     json += $"}}";
                 else
@@ -113,26 +113,23 @@ namespace Yuzuri.Managers
 
         public void WriteToSrpiteSheet(string target, List<int> coordinates)
         {
-            using var fs = new FileStream($"data/Sprite_Resources/PlayerSheet.png", FileMode.Open, FileAccess.Read);
-            using MemoryStream outStream = new MemoryStream();
-            using var image = Image.Load(fs);
+            using var image = Image.Load<Rgba32>($"data/Sprite_Resources/PlayerSheet.png");
+            using var fs = new FileStream($"data/Sprite_Resources/PlayerSheet.png", FileMode.OpenOrCreate, FileAccess.ReadWrite);
             {
                 var pngEncoder = new PngEncoder();
-                var clone = image.Clone(img => img
+                Image<Rgba32> clone = image.Clone(img => img
                 .Crop(CropLocation(target)));
-                clone.Save(outStream, pngEncoder);
-                outStream.Close();
                 Console.WriteLine("Cropped Image");
                 int localX = 0;
                 int localY = 0;
                 if (coordinates[0] > 0)
-                    localX = coordinates[0] * 35;
+                    localX = coordinates[0] * 35 - 34;
                 if (coordinates[1] > 0)
-                    localY = coordinates[1] * 35;
-                Point point = new Point(localX, localY);
-                image.Mutate(clone => clone.DrawImage(image, point, 100));
+                    localY = coordinates[1] * 35 - 34;
+                image.Mutate(o => o.DrawImage(clone, new Point(localX, localY), 1f));
+                image.Save(fs, pngEncoder);
+                fs.Close();
             }
-            fs.Close();
         }
 
         public Rectangle CropLocation(string target)
@@ -248,20 +245,16 @@ namespace Yuzuri.Managers
 
         public void ResizePlayerSheetAssistant(List<int> borrowCoords)
         {
-            using var fs = new FileStream($"data/Sprite_Resources/PlayWith.png", FileMode.OpenOrCreate, FileAccess.ReadWrite);
-            if (borrowCoords[0] == 0)
-                borrowCoords[0] = 1;
-            else borrowCoords[0] *= 35;
-            if (borrowCoords[1] == 0)
-                borrowCoords[1] = 1;
-            else borrowCoords[1] *= 35;
-            using Image<Rgba32> image = new Image<Rgba32>(borrowCoords[0], borrowCoords[1]);
             using Image<Rgba32> imageSets = Image.Load<Rgba32>("data/Sprite_Resources/PlayerSheet.png");
+            using var fs = new FileStream($"data/Sprite_Resources/PlayerSheet.png", FileMode.OpenOrCreate, FileAccess.ReadWrite);
+            borrowCoords[0] = (borrowCoords[0] + 1) * 35;
+            borrowCoords[1] = (borrowCoords[1]+ 1) * 35;
+            using Image<Rgba32> image = new Image<Rgba32>(borrowCoords[0], borrowCoords[1]);
             {
                 var png = new PngEncoder();
                 image.Mutate(o => o.DrawImage(imageSets, new Point(0, 0), 1f));
                 image.Save(fs, png);
-
+                fs.Close();
                               //using var image = new Image<Rgba32>(borrowCoords[0], borrowCoords[1]);
                               //{
                               //    Console.WriteLine("Loaded ResizePlayerSheetAssistant");
