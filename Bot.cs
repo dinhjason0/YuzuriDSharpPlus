@@ -13,6 +13,9 @@ using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.Entities;
 using Yuzuri.Commons;
+using System.Linq;
+using System.Net;
+using System.IO.Compression;
 //Hi xVeles
 
 namespace Yuzuri
@@ -192,9 +195,12 @@ namespace Yuzuri
                 // Check if already exists
                 bool hasRoomCategory = yuzuGuild.RoomId != 0;
                 bool hasFloorsCategory = yuzuGuild.FloorId != 0;
+                ulong resourcesChannel = yuzuGuild.Resources.Count == 0 ? 0 : yuzuGuild.Resources[0];
+               /* ulong resourcesChannel = 0;
+                if (yuzuGuild.Resources.Count == 0)
+                    resourcesChannel = yuzuGuild.Resources[0];*/
 
-                // If both do skip
-                if (!hasRoomCategory && !hasFloorsCategory)
+                if (!hasRoomCategory || !hasFloorsCategory || resourcesChannel == 0)
                 {
                     foreach (KeyValuePair<ulong, DiscordChannel> channel in guild.Channels)
                     {
@@ -220,7 +226,14 @@ namespace Yuzuri
                             }
 
                         }
+                        else if (channel.Value.Name.Equals("resources", StringComparison.OrdinalIgnoreCase) && resourcesChannel == 0)
+                        {
+                            Console.WriteLine($"{guild.Name}'s Resource channel... Found!");
+                            resourcesChannel = channel.Value.Id;
+                            yuzuGuild.Resources.Add(resourcesChannel);
+                        }
                     }
+                    
 
                     // Add new categories
                     if (!hasRoomCategory)
@@ -284,7 +297,49 @@ namespace Yuzuri
                 }
                 else
                 {
+
                     Console.WriteLine($"{guild.Name}'s Roles... OK.");
+
+                    // Download files from resouces channel
+                    try
+                    {
+                        DiscordChannel resources = await Client.GetChannelAsync(resourcesChannel).ConfigureAwait(false);
+                        Console.WriteLine($"Checking Resources... Found! Extracting data");
+
+                        foreach (DiscordMessage msg in await resources.GetMessagesAsync().ConfigureAwait(false))
+                        {
+                            
+                            // IF already extracted skip
+                            if (!yuzuGuild.Resources.Contains(msg.Id))
+                            {
+                                if (msg.Attachments.Count != 0)
+                                {
+                                    DiscordAttachment discordAttachment = msg.Attachments.FirstOrDefault();
+
+                                    using WebClient client = new WebClient();
+                                    await client.DownloadFileTaskAsync(new Uri(discordAttachment.Url), $"{discordAttachment.FileName}").ConfigureAwait(false);
+
+                                    ZipFile.ExtractToDirectory(discordAttachment.FileName, msg.Content);
+                                    File.Delete(discordAttachment.FileName);
+
+                                    yuzuGuild.Resources.Add(msg.Id);
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Checking Resources... 404 NOT FOUND! Skipping...");
+                        Console.WriteLine(ex);
+                    }
+
+                }
+
+                
+
+                if (resourcesChannel != 0)
+                {
+                    Console.Write("Found");
                 }
 
                 Console.WriteLine($"Generating {guild.Name} data... Done.");
@@ -292,9 +347,10 @@ namespace Yuzuri
 
 
             }
-            catch
+            catch (Exception ex)
             {
                 Console.WriteLine("Guild List could not be retrieved");
+                Console.WriteLine(ex);
             }
         }
 
