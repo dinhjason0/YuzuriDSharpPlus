@@ -16,13 +16,18 @@ using Yuzuri.Commons;
 using System.Linq;
 using System.Net;
 using System.IO.Compression;
+using DSharpPlus.SlashCommands;
+using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 //Hi xVeles
 
 namespace Yuzuri
 {
     public class Bot
     {
-        public DiscordClient Client { get; private set; }
+        public static DiscordClient BaseClient { get; private set; }
+        public static DiscordSlashClient SlashClient { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
         public InteractionCreateEventArgs Interaction { get; private set; }
         public ConfigJson Config { get; protected set; }
@@ -48,22 +53,30 @@ namespace Yuzuri
 
             try
             {
-                var discordConfig = new DiscordConfiguration
+                BaseClient = new DiscordClient(new DiscordConfiguration
                 {
                     Token = Debug.Token,
                     TokenType = TokenType.Bot,
                     AutoReconnect = true,
-                    //MinimumLogLevel = LogLevel.Debug
-                };
+                    MinimumLogLevel = LogLevel.Debug
+                });
 
-                Client = new DiscordClient(discordConfig);
+                SlashClient = new DiscordSlashClient(new DiscordSlashConfiguration
+                {
+                    Client = BaseClient,
+                    Token = Debug.Token,
+                    Logger = BaseClient.Logger
+                    
+                });
+
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine(ex);
                 Console.Write("Choke @ discordConfig");
             }
 
-            Client.UseInteractivity(new InteractivityConfiguration
+            BaseClient.UseInteractivity(new InteractivityConfiguration
             {
                 Timeout = TimeSpan.FromSeconds(20),
 
@@ -77,10 +90,11 @@ namespace Yuzuri
             };
             try
             {
-                Commands = Client.UseCommandsNext(commandsConfig);
-                Commands.RegisterCommands<PlayerCommands>();
-                Commands.RegisterCommands<AdminCommands>();
-                Commands.RegisterCommands<ItemsCommand>();
+                Commands = BaseClient.UseCommandsNext(commandsConfig);
+                //Commands.RegisterCommands<PlayerCommands>();
+                //Commands.RegisterCommands<AdminCommands>();
+                //Commands.RegisterCommands<ItemsCommand>();
+                Commands.RegisterCommands(Assembly.GetExecutingAssembly());
             }
             catch
             {
@@ -91,7 +105,11 @@ namespace Yuzuri
 
             Console.WriteLine($"Yuzuki now Online! Startup took {(DateTime.Now - dateTime).TotalSeconds} seconds");
 
-            await Client.ConnectAsync().ConfigureAwait(false);
+            await BaseClient.ConnectAsync().ConfigureAwait(false);
+
+            SlashClient.RegisterCommands(Assembly.GetExecutingAssembly());
+
+            await SlashClient.StartAsync().ConfigureAwait(false);
 
             await Task.Delay(-1);
 
@@ -113,8 +131,12 @@ namespace Yuzuri
 
         private void RegisterEvents()
         {
-            Client.Ready += OnClientReady;
-            Client.GuildAvailable += GuildAvailable;
+            BaseClient.ApplicationCommandCreated += Discord_ApplicationCommandCreated;
+            BaseClient.ApplicationCommandDeleted += Discord_ApplicationCommandDeleted;
+            BaseClient.ApplicationCommandUpdated += Discord_ApplicationCommandUpdated;
+            BaseClient.Ready += OnClientReady;
+            BaseClient.GuildAvailable += GuildAvailable;
+            BaseClient.InteractionCreated += SlashClient.HandleGatewayEvent;
         }
 
         private async Task GuildAvailable(DiscordClient sender, GuildCreateEventArgs e)
@@ -303,7 +325,7 @@ namespace Yuzuri
                     // Download files from resouces channel
                     try
                     {
-                        DiscordChannel resources = await Client.GetChannelAsync(resourcesChannel).ConfigureAwait(false);
+                        DiscordChannel resources = await BaseClient.GetChannelAsync(resourcesChannel).ConfigureAwait(false);
                         Console.WriteLine($"Checking Resources... Found! Extracting data");
 
                         foreach (DiscordMessage msg in await resources.GetMessagesAsync().ConfigureAwait(false))
@@ -350,6 +372,22 @@ namespace Yuzuri
         public static void ReloadItems()
         {
             ItemManager = new ItemManager();
+        }
+
+        private static Task Discord_ApplicationCommandUpdated(DiscordClient sender, DSharpPlus.EventArgs.ApplicationCommandEventArgs e)
+        {
+            BaseClient.Logger.LogInformation($"Shard {sender.ShardId} sent application command updated: {e.Command.Name}: {e.Command.Id} for {e.Command.ApplicationId}");
+            return Task.CompletedTask;
+        }
+        private static Task Discord_ApplicationCommandDeleted(DiscordClient sender, DSharpPlus.EventArgs.ApplicationCommandEventArgs e)
+        {
+            BaseClient.Logger.LogInformation($"Shard {sender.ShardId} sent application command deleted: {e.Command.Name}: {e.Command.Id} for {e.Command.ApplicationId}");
+            return Task.CompletedTask;
+        }
+        private static Task Discord_ApplicationCommandCreated(DiscordClient sender, DSharpPlus.EventArgs.ApplicationCommandEventArgs e)
+        {
+            BaseClient.Logger.LogInformation($"Shard {sender.ShardId} sent application command created: {e.Command.Name}: {e.Command.Id} for {e.Command.ApplicationId}");
+            return Task.CompletedTask;
         }
     }
 }

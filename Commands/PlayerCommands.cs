@@ -1,12 +1,10 @@
-﻿using DSharpPlus;
-using DSharpPlus.CommandsNext;
+﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using DSharpPlus.Interactivity;
-using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
+using DSharpPlus.SlashCommands.Attributes;
+using DSharpPlus.SlashCommands.Entities;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Yuzuri.Commons;
@@ -15,11 +13,13 @@ using Yuzuri.Managers;
 
 namespace Yuzuri.Commands
 {
-    public class PlayerCommands : BaseCommandModule
+    public class PlayerCommands : BaseSlashCommandModule
     {
+        public PlayerCommands(IServiceProvider p) : base(p) { }
+
         private readonly Random rng = new Random();
 
-        [Command("start"), Description("Start your adventure!"), Aliases("adventure")]
+        [SlashCommand("start"), Description("Start your adventure!"), Aliases("adventure")]
         public async Task Start(CommandContext ctx)
         {
             if (!PlayerManager.PlayerRoleCheck(ctx.Guild, ctx.Member, out DiscordRole playerRole))
@@ -111,7 +111,7 @@ namespace Yuzuri.Commands
             }
         }
 
-        [Command("stats"), Description("View your stats"), RequireRoles(RoleCheckMode.Any, new string[] { "Player" })]
+        [SlashCommand("stats"), Description("View your stats"), RequireRoles(RoleCheckMode.Any, new string[] { "Player" })]
         public async Task Stats(CommandContext ctx)
         {
             if (PlayerManager.PlayerRoleCheck(ctx.Guild, ctx.Member))
@@ -186,7 +186,7 @@ namespace Yuzuri.Commands
             }
         }
 
-        [Command("quit"), Description("End your adventure"), RequireRoles(RoleCheckMode.Any, new string[] { "Player" })]
+        [SlashCommand("quit"), Description("End your adventure"), RequireRoles(RoleCheckMode.Any, new string[] { "Player" })]
         public async Task Quit(CommandContext ctx)
         {
             if (PlayerManager.PlayerRoleCheck(ctx.Guild, ctx.Member, out DiscordRole discordRole))
@@ -220,7 +220,7 @@ namespace Yuzuri.Commands
             }
         }
 
-        [Command("inventory"), Description("View your inventory"), Aliases(new string[] { "inv" }), RequireRoles(RoleCheckMode.Any, new string[] { "Player" })]
+        [SlashCommand("inventory"), Description("View your inventory"), Aliases(new string[] { "inv" }), RequireRoles(RoleCheckMode.Any, new string[] { "Player" })]
         public async Task Inventory(CommandContext ctx)
         {
             Player player = Bot.PlayerManager.ReadPlayerData(ctx.User.Id);
@@ -248,9 +248,9 @@ namespace Yuzuri.Commands
         }
 
         [Command("ping")]
-        public async Task Ping(CommandContext ctx)
+        public async Task Ping(InteractionContext ctx)
         {
-            await ctx.Channel.SendMessageAsync("Pong!").ConfigureAwait(false);
+            await ctx.ReplyAsync("Pong!").ConfigureAwait(false);
         }        
     }
 }
