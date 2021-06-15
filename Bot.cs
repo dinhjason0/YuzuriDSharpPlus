@@ -150,7 +150,7 @@ namespace Yuzuri
             if (!File.Exists("data/config.json"))
             {
                 Console.WriteLine("Config... 404 NOT FOUND!");
-                ConfigJson configJson = new ConfigJson()
+                ConfigJson configJson = new()
                 {
                     Token = "",
                     Prefix = "."
@@ -319,7 +319,7 @@ namespace Yuzuri
                                     using WebClient client = new WebClient();
                                     await client.DownloadFileTaskAsync(new Uri(discordAttachment.Url), $"{discordAttachment.FileName}").ConfigureAwait(false);
 
-                                    ZipFile.ExtractToDirectory(discordAttachment.FileName, msg.Content);
+                                    ZipFile.ExtractToDirectory(discordAttachment.FileName, $"{Directory.GetCurrentDirectory()}/{msg.Content}", true);
                                     File.Delete(discordAttachment.FileName);
 
                                     yuzuGuild.Resources.Add(msg.Id);
@@ -333,13 +333,6 @@ namespace Yuzuri
                         Console.WriteLine(ex);
                     }
 
-                }
-
-                
-
-                if (resourcesChannel != 0)
-                {
-                    Console.Write("Found");
                 }
 
                 Console.WriteLine($"Generating {guild.Name} data... Done.");
