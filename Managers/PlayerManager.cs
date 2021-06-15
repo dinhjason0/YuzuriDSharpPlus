@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Yuzuri.Commons;
@@ -51,6 +52,19 @@ namespace Yuzuri.Managers
             catch
             { }
             
+        }
+
+        public static bool PlayerRoleCheck(DiscordGuild guild, DiscordMember member, out DiscordRole playerRole)
+        {
+            YuzuGuild yuzuGuild = Bot.GuildManager.ReadGuildData(guild.Id);
+            playerRole = guild.GetRole(yuzuGuild.RoleId);
+
+            return member.Roles.Contains(playerRole);
+        }
+
+        public static bool PlayerRoleCheck(DiscordGuild guild, DiscordMember member)
+        {
+            return PlayerRoleCheck(guild, member, out _);
         }
     }
 }

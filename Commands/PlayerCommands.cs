@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Yuzuri.Commons;
 using Yuzuri.Helpers;
+using Yuzuri.Managers;
 
 namespace Yuzuri.Commands
 {
@@ -21,12 +22,12 @@ namespace Yuzuri.Commands
         [Command("start"), Description("Start your adventure!"), Aliases("adventure")]
         public async Task Start(CommandContext ctx)
         {
-            if (!PlayerRoleCheck(ctx.Guild, ctx.Member, out DiscordRole playerRole))
+            if (!PlayerManager.PlayerRoleCheck(ctx.Guild, ctx.Member, out DiscordRole playerRole))
             {
                 var interactivity = ctx.Client.GetInteractivity();
 
                 var embed = new DiscordEmbedBuilder()
-                { 
+                {
                     Title = "Weclome New User",
                     Description = "New arrivals, please head towards the registry table."
                 };
@@ -42,7 +43,7 @@ namespace Yuzuri.Commands
                         && x.Author == ctx.User
                     ).ConfigureAwait(false);
 
-                
+
 
                 if (response.TimedOut)
                 {
@@ -74,7 +75,7 @@ namespace Yuzuri.Commands
                     {
                         count += rng.Next(3, 5);
                         if (i == 2) count = 10;
-                        embed.Description = $"{embedString}  {new string('⬛', count)}{new string('⬜', 10-count)} {10*count}%";
+                        embed.Description = $"{embedString}  {new string('⬛', count)}{new string('⬜', 10 - count)} {10 * count}%";
                         await msg.ModifyAsync(embed: embed.Build()).ConfigureAwait(false);
                         await Task.Delay(800);
                     }
@@ -101,7 +102,7 @@ namespace Yuzuri.Commands
                     {
                         Console.WriteLine(ex);
                     }
-                    
+
                 }
             }
             else
@@ -110,10 +111,10 @@ namespace Yuzuri.Commands
             }
         }
 
-        [Command("stats"), Description("View your stats")]
+        [Command("stats"), Description("View your stats"), RequireRoles(RoleCheckMode.Any, new string[] { "Player" })]
         public async Task Stats(CommandContext ctx)
         {
-            if (PlayerRoleCheck(ctx.Guild, ctx.Member, out _))
+            if (PlayerManager.PlayerRoleCheck(ctx.Guild, ctx.Member))
             {
                 Player player = Bot.PlayerManager.ReadPlayerData(ctx.User.Id);
 
@@ -131,7 +132,7 @@ namespace Yuzuri.Commands
                         status = $"```yaml\nAlive\n```";
                         break;
                 }
-                
+
 
                 var embed = new DiscordEmbedBuilder
                 {
@@ -144,7 +145,7 @@ namespace Yuzuri.Commands
                     Color = DiscordColor.Green,
                 };
 
-                embed.AddField("\n**Stats**\n", 
+                embed.AddField("\n**Stats**\n",
                     $"{EmojiHelper.GetStatEmoji("HP", ctx.Client)} HP: {player.HP}\n" +
                     $"{EmojiHelper.GetStatEmoji("STR", ctx.Client)} STR: {player.STR}\n" +
                     $"{EmojiHelper.GetStatEmoji("DEX", ctx.Client)} DEX: {player.DEX}\n" +
@@ -156,11 +157,11 @@ namespace Yuzuri.Commands
                 {
 
                     embed.AddField("**Equipped**",
-                        $"{DiscordEmoji.FromName(ctx.Client, ":billed_cap:")} Helmet: {player.Equipped[Player.EquippedSlots.Helmet].Name}\n" +
-                        $"{DiscordEmoji.FromName(ctx.Client, ":shirt:")} Chest: {player.Equipped[Player.EquippedSlots.Chest].Name}\n" +
-                        $"{DiscordEmoji.FromName(ctx.Client, ":gloves:")} Gloves: {player.Equipped[Player.EquippedSlots.Arms].Name}\n" +
-                        $"{DiscordEmoji.FromName(ctx.Client, ":jeans:")} Legs: {player.Equipped[Player.EquippedSlots.Legs].Name}\n" +
-                        $"{DiscordEmoji.FromName(ctx.Client, ":athletic_shoe:")} Feet: {player.Equipped[Player.EquippedSlots.Shoes].Name}\n", true);
+                        $"{EmojiHelper.GetItemEmoji(ItemCategory.Helmet, ctx.Client)} Helmet: {player.Equipped[Player.EquippedSlots.Helmet].Name}\n" +
+                        $"{EmojiHelper.GetItemEmoji(ItemCategory.Chestplate, ctx.Client)} Chest: {player.Equipped[Player.EquippedSlots.Chest].Name}\n" +
+                        $"{EmojiHelper.GetItemEmoji(ItemCategory.Arms, ctx.Client)} Gloves: {player.Equipped[Player.EquippedSlots.Arms].Name}\n" +
+                        $"{EmojiHelper.GetItemEmoji(ItemCategory.Leggings, ctx.Client)} Legs: {player.Equipped[Player.EquippedSlots.Legs].Name}\n" +
+                        $"{EmojiHelper.GetItemEmoji(ItemCategory.Shoes, ctx.Client)} Feet: {player.Equipped[Player.EquippedSlots.Shoes].Name}\n", true);
                 }
                 catch (Exception ex)
                 {
@@ -188,13 +189,13 @@ namespace Yuzuri.Commands
         [Command("quit"), Description("End your adventure"), RequireRoles(RoleCheckMode.Any, new string[] { "Player" })]
         public async Task Quit(CommandContext ctx)
         {
-            if (PlayerRoleCheck(ctx.Guild, ctx.Member, out DiscordRole discordRole))
+            if (PlayerManager.PlayerRoleCheck(ctx.Guild, ctx.Member, out DiscordRole discordRole))
             {
                 var interactivity = ctx.Client.GetInteractivity();
 
                 var msg = await ctx.Channel.SendMessageAsync("Are you sure you want to end your adventure? React to the tick emoji to confirm.");
                 await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":white_check_mark:")).ConfigureAwait(false);
-                
+
                 var reaction = await interactivity
                     .WaitForReactionAsync(x =>
                         x.Channel == ctx.Channel
@@ -219,20 +220,37 @@ namespace Yuzuri.Commands
             }
         }
 
+        [Command("inventory"), Description("View your inventory"), Aliases(new string[] { "inv" }), RequireRoles(RoleCheckMode.Any, new string[] { "Player" })]
+        public async Task Inventory(CommandContext ctx)
+        {
+            Player player = Bot.PlayerManager.ReadPlayerData(ctx.User.Id);
+
+            var embed = new DiscordEmbedBuilder
+            {
+                Title = $"{player.Name}'s Stats",
+                Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail()
+                {
+                    Url = ctx.User.AvatarUrl
+                },
+                Color = DiscordColor.Green,
+            };
+
+            for (int i = 0, x = 1; i < player.Inventory.Count; i += 10, x++)
+            {
+                embed.AddField($"**Inventory - {x}**",
+                    $"{string.Join("\n", player.Inventory.GetRange(i, (i + 10 > player.Inventory.Count ? player.Inventory.Count - i : 10)).Select(i => $"{EmojiHelper.GetItemEmoji(i.ItemCategory, ctx.Client)} {i.Name}"))}", true);
+
+            }
+
+            embed.WithFooter($"Inventory Slots: {player.Inventory.Count}/100");
+
+            var msg = await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
+        }
 
         [Command("ping")]
         public async Task Ping(CommandContext ctx)
         {
             await ctx.Channel.SendMessageAsync("Pong!").ConfigureAwait(false);
-        }
-
-        private bool PlayerRoleCheck(DiscordGuild guild, DiscordMember member, out DiscordRole playerRole)
-        {
-            YuzuGuild yuzuGuild = Bot.GuildManager.ReadGuildData(guild.Id);
-            playerRole = guild.GetRole(yuzuGuild.RoleId);
-            
-            return member.Roles.Contains(playerRole);
-        }
-        
+        }        
     }
 }

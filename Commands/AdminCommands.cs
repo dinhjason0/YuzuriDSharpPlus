@@ -16,6 +16,9 @@ using System.Linq;
 using DSharpPlus.Interactivity.Extensions;
 using Yuzuri.Helpers;
 using Newtonsoft.Json;
+using System.Linq.Expressions;
+using Emzi0767.Utilities;
+using DSharpPlus.EventArgs;
 
 namespace Yuzuri.Commands
 {
@@ -147,7 +150,7 @@ namespace Yuzuri.Commands
         {
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
             Console.WriteLine("Accessing loadsprite command");
-            if (member.Roles.Contains(ctx.Guild.GetRole(Bot.GuildManager.ReadGuildData(ctx.Guild.Id).RoleId)))
+            if (PlayerManager.PlayerRoleCheck(ctx.Guild, ctx.Member))
             {
                 ImageProcesserManager processerManager = new ImageProcesserManager();
                 //Search through PlayerSheetAssistant to see if user.Id is in Assistant.json
@@ -293,11 +296,11 @@ namespace Yuzuri.Commands
         [Command("giveitem"), Description("Gives a player an item")]
         [Hidden]
         [RequirePermissions(Permissions.Administrator)]
-        public async Task GiveItem(CommandContext ctx, DiscordMember user, [RemainingText] string itemName)
+        public async Task GiveItem(CommandContext ctx, DiscordMember member, [RemainingText] string itemName)
         {
-            if (user.Roles.Contains(ctx.Guild.GetRole(Bot.GuildManager.ReadGuildData(ctx.Guild.Id).RoleId)))
+            if (PlayerManager.PlayerRoleCheck(ctx.Guild, member))
             {
-                Player player = Bot.PlayerManager.ReadPlayerData(user.Id);
+                Player player = Bot.PlayerManager.ReadPlayerData(member.Id);
 
                 try
                 {
@@ -320,21 +323,21 @@ namespace Yuzuri.Commands
             }
             else
             {
-                await ctx.Channel.SendMessageAsync($"{user.DisplayName} isn't a player").ConfigureAwait(false);
+                await ctx.Channel.SendMessageAsync($"{member.DisplayName} isn't a player").ConfigureAwait(false);
             }
         }
 
         [Command("setstatus"), Description("Sets a player status")]
         [Hidden]
         [RequirePermissions(Permissions.Administrator)]
-        public async Task SetStatus(CommandContext ctx, DiscordMember user, string status)
+        public async Task SetStatus(CommandContext ctx, DiscordMember member, string status)
         {
-            if (user.Roles.Contains(ctx.Guild.GetRole(Bot.GuildManager.ReadGuildData(ctx.Guild.Id).RoleId)))
+            if (PlayerManager.PlayerRoleCheck(ctx.Guild, member))
             {
                 try
                 {
                     Enum.TryParse(status, out StatusEffects statusEffect);
-                    Player player = Bot.PlayerManager.ReadPlayerData(user.Id);
+                    Player player = Bot.PlayerManager.ReadPlayerData(member.Id);
 
                     player.StatusEffects = statusEffect;
                     player.SaveData();
@@ -348,7 +351,7 @@ namespace Yuzuri.Commands
             }
             else
             {
-                await ctx.Channel.SendMessageAsync($"{user.DisplayName} isn't a player").ConfigureAwait(false);
+                await ctx.Channel.SendMessageAsync($"{member.DisplayName} isn't a player").ConfigureAwait(false);
             }
         }
 
