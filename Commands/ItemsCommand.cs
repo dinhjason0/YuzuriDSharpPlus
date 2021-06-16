@@ -1,10 +1,10 @@
 ﻿using DSharpPlus;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
+using DSharpPlus.SlashCommands;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,12 +16,21 @@ using Yuzuri.Managers;
 
 namespace Yuzuri.Commands
 {
-    public class ItemsCommand : BaseCommandModule
+    public class ItemsCommand : SlashCommandModule
     {
 
-        [Command("items"), Description("View all available items")]
-        public async Task Items(CommandContext ctx)
+        public ItemManager ItemManager { get; private set; }
+
+        public ItemsCommand(IServiceProvider provider)
         {
+            ItemManager = provider.GetRequiredService<ItemManager>();
+        }
+
+        [SlashCommand("items", "View all available items")]
+        public async Task Items(InteractionContext ctx)
+        {
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder().WithContent("Loading Player data...")).ConfigureAwait(false);
             try
             {
                 var interactivity = ctx.Client.GetInteractivity();
@@ -54,6 +63,8 @@ namespace Yuzuri.Commands
                 await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages,
                     behaviour: PaginationBehaviour.WrapAround, deletion: PaginationDeletion.DeleteEmojis,
                     timeoutoverride: TimeSpan.FromMinutes(2)).ConfigureAwait(false);
+
+                
             }
             catch (Exception ex)
             {

@@ -16,19 +16,10 @@ namespace Yuzuri.Managers
 
             Items.Clear();
 
-            foreach (string file in Directory.GetFiles("data/Items"))
-            {
-                using StreamReader r = new StreamReader(file);
-                string json = r.ReadToEnd();
-                Item item = JsonConvert.DeserializeObject<Item>(json);
-                Items.Add(item);
-                r.Close();
-            }
-
-            Console.WriteLine($"{Items.Count}(s) Items found!");
+            LoadItems();
         }
 
-        public static List<Item> Items = new List<Item>();
+        public List<Item> Items = new List<Item>();
         
         public Item GetItem(string name)
         {
@@ -48,6 +39,26 @@ namespace Yuzuri.Managers
             return null;
         }
 
+        public void LoadItems()
+        {
+            foreach (string file in Directory.GetFiles("data/Items"))
+            {
+                using StreamReader r = new StreamReader(file);
+                string json = r.ReadToEnd();
+                Item item = JsonConvert.DeserializeObject<Item>(json);
+                Items.Add(item);
+                r.Close();
+            }
+
+            Console.WriteLine($"{Items.Count}(s) Items found!");
+        }
+
+        public void ReloadItems()
+        {
+            Items.Clear();
+            LoadItems();
+        }
+
         public void WriteItem(Item item)
         {
             using StreamWriter w = File.CreateText($"data/Items/{item.Name.Replace(" ", "")}.json");
@@ -63,7 +74,8 @@ namespace Yuzuri.Managers
             searializer.Serialize(w, item);
             w.Close();
 
-            File.Delete($"data/Items/{originalName.Replace(" ", "")}.json");
+            if (File.Exists($"data/Items/{originalName.Replace(" ", "")}.json"))
+                File.Delete($"data/Items/{originalName.Replace(" ", "")}.json");
         }
     }
 }

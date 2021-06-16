@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Yuzuri.Managers;
 
 namespace Yuzuri.Commons
 {
@@ -64,7 +65,7 @@ namespace Yuzuri.Commons
 
             Inventory = new List<Item>
             {
-                Bot.ItemManager.GetItem("Potion")
+                //Bot.ItemManager.GetItem("Potion")
             };
 
             Equipped = new Dictionary<EquippedSlots, Item>()
@@ -141,7 +142,7 @@ namespace Yuzuri.Commons
 
         public void SaveData()
         {
-            Bot.PlayerManager.WritePlayerData(this);
+            PlayerManager.WritePlayerData(this);
         }
 
         public enum EquippedSlots
