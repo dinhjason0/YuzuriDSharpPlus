@@ -303,27 +303,30 @@ namespace Yuzuri
                     // Download files from resouces channel
                     try
                     {
-                        DiscordChannel resources = await Client.GetChannelAsync(resourcesChannel).ConfigureAwait(false);
-                        Console.WriteLine($"Checking Resources... Found! Extracting data");
-
-                        foreach (DiscordMessage msg in await resources.GetMessagesAsync().ConfigureAwait(false))
+                        if (resourcesChannel != 0) 
                         {
-                            
-                            // IF already extracted skip
-                            if (!yuzuGuild.Resources.Contains(msg.Id))
+                            DiscordChannel resources = await Client.GetChannelAsync(resourcesChannel).ConfigureAwait(false);
+                            Console.WriteLine($"Checking Resources... Found! Extracting data");
+
+                            foreach (DiscordMessage msg in await resources.GetMessagesAsync().ConfigureAwait(false))
                             {
-                                if (msg.Attachments.Count != 0)
+
+                                // IF already extracted skip
+                                if (!yuzuGuild.Resources.Contains(msg.Id))
                                 {
-                                    DiscordAttachment discordAttachment = msg.Attachments.FirstOrDefault();
+                                    if (msg.Attachments.Count != 0)
+                                    {
+                                        DiscordAttachment discordAttachment = msg.Attachments.FirstOrDefault();
 
-                                    using WebClient client = new WebClient();
-                                    await client.DownloadFileTaskAsync(new Uri(discordAttachment.Url), $"{discordAttachment.FileName}").ConfigureAwait(false);
+                                        using WebClient client = new WebClient();
+                                        await client.DownloadFileTaskAsync(new Uri(discordAttachment.Url), $"{discordAttachment.FileName}").ConfigureAwait(false);
 
-                                    if (discordAttachment.MediaType.Equals("application/zip", StringComparison.OrdinalIgnoreCase))
-                                        ZipFile.ExtractToDirectory(discordAttachment.FileName, $"{Directory.GetCurrentDirectory()}/{msg.Content}", true);
-                                    File.Delete(discordAttachment.FileName);
+                                        if (discordAttachment.MediaType.Equals("application/zip", StringComparison.OrdinalIgnoreCase))
+                                            ZipFile.ExtractToDirectory(discordAttachment.FileName, $"{Directory.GetCurrentDirectory()}/{msg.Content}", true);
+                                        File.Delete(discordAttachment.FileName);
 
-                                    yuzuGuild.Resources.Add(msg.Id);
+                                        yuzuGuild.Resources.Add(msg.Id);
+                                    }
                                 }
                             }
                         }
