@@ -20,6 +20,7 @@ using DSharpPlus.SlashCommands;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using DSharpPlus.SlashCommands.Entities.Builders;
 //Hi xVeles
 
 namespace Yuzuri
@@ -44,7 +45,6 @@ namespace Yuzuri
 
             Config = RegisterConfig().Result;
 
-
             Console.WriteLine("Loading Assets...");
             PlayerManager = new PlayerManager();
             GuildManager = new GuildManager();
@@ -55,18 +55,20 @@ namespace Yuzuri
             {
                 BaseClient = new DiscordClient(new DiscordConfiguration
                 {
-                    Token = Debug.Token,
+                    Token = Debug.Token2,
                     TokenType = TokenType.Bot,
                     AutoReconnect = true,
-                    MinimumLogLevel = LogLevel.Debug
+                    MinimumLogLevel = LogLevel.Debug,
+                    Intents = DiscordIntents.AllUnprivileged
                 });
 
                 SlashClient = new DiscordSlashClient(new DiscordSlashConfiguration
                 {
                     Client = BaseClient,
-                    Token = Debug.Token,
-                    Logger = BaseClient.Logger
-                    
+                    Token = Debug.Token2,
+                    Logger = BaseClient.Logger,
+                    DefaultResponseType = InteractionResponseType.ChannelMessageWithSource,
+                    DefaultResponseData = new InteractionApplicationCommandCallbackDataBuilder().WithContent("Automated Reply")
                 });
 
             }
@@ -119,7 +121,7 @@ namespace Yuzuri
         {
             var json = string.Empty;
             using (var fs = File.OpenRead("data/config.json"))
-            using (StreamReader sr = new StreamReader(fs, new UTF8Encoding(false)))
+            using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
                 json = await sr.ReadToEndAsync().ConfigureAwait(false);
 
             ConfigJson configJson = JsonConvert.DeserializeObject<ConfigJson>(json);
@@ -131,12 +133,17 @@ namespace Yuzuri
 
         private void RegisterEvents()
         {
+            BaseClient.InteractionCreated += SlashClient.HandleGatewayEvent;
+            BaseClient.InteractionCreated += (x, y) =>
+            {
+                BaseClient.Logger.LogInformation("Interaction Created Received");
+                return Task.CompletedTask;
+            };
             BaseClient.ApplicationCommandCreated += Discord_ApplicationCommandCreated;
             BaseClient.ApplicationCommandDeleted += Discord_ApplicationCommandDeleted;
             BaseClient.ApplicationCommandUpdated += Discord_ApplicationCommandUpdated;
             BaseClient.Ready += OnClientReady;
-            BaseClient.GuildAvailable += GuildAvailable;
-            BaseClient.InteractionCreated += SlashClient.HandleGatewayEvent;
+            BaseClient.GuildAvailable += GuildAvailable;   
         }
 
         private async Task GuildAvailable(DiscordClient sender, GuildCreateEventArgs e)
@@ -336,12 +343,13 @@ namespace Yuzuri
                             {
                                 if (msg.Attachments.Count != 0)
                                 {
-                                    DiscordAttachment discordAttachment = msg.Attachments.FirstOrDefault();
+                                    DiscordAttachment discordAttachment = msg.Attachments[0];
 
                                     using WebClient client = new WebClient();
                                     await client.DownloadFileTaskAsync(new Uri(discordAttachment.Url), $"{discordAttachment.FileName}").ConfigureAwait(false);
 
-                                    ZipFile.ExtractToDirectory(discordAttachment.FileName, $"{Directory.GetCurrentDirectory()}/{msg.Content}", true);
+                                    if (discordAttachment.MediaType.Equals("application/zip", StringComparison.OrdinalIgnoreCase))
+                                        ZipFile.ExtractToDirectory(discordAttachment.FileName, $"{Directory.GetCurrentDirectory()}/{msg.Content}", true);
                                     File.Delete(discordAttachment.FileName);
 
                                     yuzuGuild.Resources.Add(msg.Id);
@@ -374,17 +382,17 @@ namespace Yuzuri
             ItemManager = new ItemManager();
         }
 
-        private static Task Discord_ApplicationCommandUpdated(DiscordClient sender, DSharpPlus.EventArgs.ApplicationCommandEventArgs e)
+        private static Task Discord_ApplicationCommandUpdated(DiscordClient sender, ApplicationCommandEventArgs e)
         {
             BaseClient.Logger.LogInformation($"Shard {sender.ShardId} sent application command updated: {e.Command.Name}: {e.Command.Id} for {e.Command.ApplicationId}");
             return Task.CompletedTask;
         }
-        private static Task Discord_ApplicationCommandDeleted(DiscordClient sender, DSharpPlus.EventArgs.ApplicationCommandEventArgs e)
+        private static Task Discord_ApplicationCommandDeleted(DiscordClient sender, ApplicationCommandEventArgs e)
         {
             BaseClient.Logger.LogInformation($"Shard {sender.ShardId} sent application command deleted: {e.Command.Name}: {e.Command.Id} for {e.Command.ApplicationId}");
             return Task.CompletedTask;
         }
-        private static Task Discord_ApplicationCommandCreated(DiscordClient sender, DSharpPlus.EventArgs.ApplicationCommandEventArgs e)
+        private static Task Discord_ApplicationCommandCreated(DiscordClient sender, ApplicationCommandEventArgs e)
         {
             BaseClient.Logger.LogInformation($"Shard {sender.ShardId} sent application command created: {e.Command.Name}: {e.Command.Id} for {e.Command.ApplicationId}");
             return Task.CompletedTask;

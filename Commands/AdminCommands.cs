@@ -412,7 +412,7 @@ namespace Yuzuri.Commands
         {
             await ctx.Channel.SendMessageAsync("WIP").ConfigureAwait(false);
 
-            var interactivity = ctx.Client.GetInteractivity();
+            var interactivity = Bot.BaseClient.GetInteractivity();
 
             var embed = new DiscordEmbedBuilder()
             {
@@ -425,7 +425,7 @@ namespace Yuzuri.Commands
             embed.AddField("Available Equippable Slots", $"{string.Join("\n", (ItemCategory[])Enum.GetValues(typeof(ItemCategory)))}", true);
             embed.AddField("Available Rarity", $"{string.Join("\n", (Rarity[])Enum.GetValues(typeof(Rarity)))}");
 
-            embed = ItemEmbedBuilder(embed, item, ctx.Client);
+            embed = ItemEmbedBuilder(embed, item, Bot.BaseClient);
 
             var embedMsg = await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
 
@@ -493,7 +493,7 @@ namespace Yuzuri.Commands
                 }
 
 
-                embed = ItemEmbedBuilder(embed, item, ctx.Client);
+                embed = ItemEmbedBuilder(embed, item, Bot.BaseClient);
 
                 await embedMsg.ModifyAsync(embed: embed.Build()).ConfigureAwait(false);
 

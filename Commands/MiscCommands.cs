@@ -1,24 +1,19 @@
-﻿using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
+﻿using DSharpPlus.CommandsNext.Attributes;
+using DSharpPlus.SlashCommands.Attributes;
+using DSharpPlus.SlashCommands.Entities;
 using System;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Yuzuri.Commands
 {
-    public class MiscCommands : BaseCommandModule
+    public class MiscCommands
     {
-
-        [Command("info"), Description("Check for info about general information")]
-        public async Task Info(CommandContext ctx, string arg)
+        
+        
+        public async Task SayTestingAsync(InteractionContext ctx, string toSay)
         {
-            switch (arg.ToLower())
-            {
-                case "status":
-                case "statuses":
-                    await ctx.Channel.SendMessageAsync("A player can be classified into three statuses `Alive`, `Unconscious` and `Dead`").ConfigureAwait(false);
-                    break;
-            }
+            await ctx.Interaction.Channel.SendMessageAsync("Test" + toSay).ConfigureAwait(false);
         }
     }
 }

@@ -63,7 +63,8 @@ namespace Yuzuri.Managers
             searializer.Serialize(w, item);
             w.Close();
 
-            File.Delete($"data/Items/{originalName.Replace(" ", "")}.json");
+            if (File.Exists($"data/Items/{originalName.Replace(" ", "")}.json"))
+                File.Delete($"data/Items/{originalName.Replace(" ", "")}.json");
         }
     }
 }
