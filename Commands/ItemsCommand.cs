@@ -5,6 +5,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,6 +19,13 @@ namespace Yuzuri.Commands
 {
     public class ItemsCommand : BaseCommandModule
     {
+
+        public ItemManager ItemManager { get; private set; }
+
+        public ItemsCommand(IServiceProvider provider)
+        {
+            ItemManager = provider.GetRequiredService<ItemManager>();
+        }
 
         [Command("items"), Description("View all available items")]
         public async Task Items(CommandContext ctx)

@@ -19,11 +19,20 @@ using Newtonsoft.Json;
 using System.Linq.Expressions;
 using Emzi0767.Utilities;
 using DSharpPlus.EventArgs;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Yuzuri.Commands
 {
     public class AdminCommands : BaseCommandModule
     {
+        public ItemManager ItemManager { get; private set; }
+
+        public AdminCommands(IServiceProvider provider)
+        {
+            ItemManager = provider.GetRequiredService<ItemManager>();
+        }
+
+
         [Command("reset")]
         [Hidden]
         [RequirePermissions(Permissions.Administrator)]

@@ -28,7 +28,7 @@ namespace Yuzuri.Managers
             Console.WriteLine($"{Items.Count}(s) Items found!");
         }
 
-        public static List<Item> Items = new List<Item>();
+        public List<Item> Items = new List<Item>();
         
         public Item GetItem(string name)
         {

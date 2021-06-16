@@ -64,7 +64,7 @@ namespace Yuzuri.Commons
 
             Inventory = new List<Item>
             {
-                Bot.ItemManager.GetItem("Potion")
+                //Bot.ItemManager.GetItem("Potion")
             };
 
             Equipped = new Dictionary<EquippedSlots, Item>()

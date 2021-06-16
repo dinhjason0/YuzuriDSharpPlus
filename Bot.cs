@@ -7,20 +7,18 @@ using System.Threading.Tasks;
 using System.IO;
 using Newtonsoft.Json;
 using Yuzuri.Managers;
-using Yuzuri.Commands;
 using System.Collections.Generic;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.Entities;
 using Yuzuri.Commons;
-using System.Linq;
 using System.Net;
 using System.IO.Compression;
 using DSharpPlus.SlashCommands;
 using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using DSharpPlus.SlashCommands.Entities.Builders;
+using Microsoft.Extensions.DependencyInjection;
+using Yuzuri.Commands;
 //Hi xVeles
 
 namespace Yuzuri
@@ -28,8 +26,9 @@ namespace Yuzuri
     public class Bot
     {
         public static DiscordClient BaseClient { get; private set; }
-        public static DiscordSlashClient SlashClient { get; private set; }
+        
         public CommandsNextExtension Commands { get; private set; }
+        public SlashCommandsExtension Slash { get; private set; }
         public InteractionCreateEventArgs Interaction { get; private set; }
         public ConfigJson Config { get; protected set; }
 
@@ -48,7 +47,7 @@ namespace Yuzuri
             Console.WriteLine("Loading Assets...");
             PlayerManager = new PlayerManager();
             GuildManager = new GuildManager();
-            ItemManager = new ItemManager();
+            //ItemManager = new ItemManager();
             Console.WriteLine("Assets Loaded!");
 
             try
@@ -60,15 +59,6 @@ namespace Yuzuri
                     AutoReconnect = true,
                     MinimumLogLevel = LogLevel.Debug,
                     Intents = DiscordIntents.AllUnprivileged
-                });
-
-                SlashClient = new DiscordSlashClient(new DiscordSlashConfiguration
-                {
-                    Client = BaseClient,
-                    Token = Debug.Token2,
-                    Logger = BaseClient.Logger,
-                    DefaultResponseType = InteractionResponseType.ChannelMessageWithSource,
-                    DefaultResponseData = new InteractionApplicationCommandCallbackDataBuilder().WithContent("Automated Reply")
                 });
 
             }
@@ -84,19 +74,35 @@ namespace Yuzuri
 
             });
 
+            ServiceProvider services = new ServiceCollection()
+                .AddSingleton<Random>()
+                .AddSingleton<ItemManager>()
+                .AddSingleton<PlayerManager>()
+                .AddSingleton<GuildManager>()
+                .BuildServiceProvider();
 
-            var commandsConfig = new CommandsNextConfiguration
-            {
-                StringPrefixes = new string[] { Config.Prefix }
+            ItemManager = services.GetRequiredService<ItemManager>();
+            GuildManager = services.GetRequiredService<GuildManager>();
+            PlayerManager = services.GetRequiredService<PlayerManager>();
 
-            };
             try
             {
-                Commands = BaseClient.UseCommandsNext(commandsConfig);
+                Commands = BaseClient.UseCommandsNext(new CommandsNextConfiguration
+                {
+                    StringPrefixes = new string[] { Config.Prefix },
+                    Services = services
+                });
                 //Commands.RegisterCommands<PlayerCommands>();
                 //Commands.RegisterCommands<AdminCommands>();
-                //Commands.RegisterCommands<ItemsCommand>();
-                Commands.RegisterCommands(Assembly.GetExecutingAssembly());
+                Commands.RegisterCommands<ItemsCommand>();
+                //Commands.RegisterCommands(Assembly.GetExecutingAssembly());
+
+                Slash = BaseClient.UseSlashCommands(new SlashCommandsConfiguration
+                {
+                    Services = services, 
+                });
+
+                Slash.RegisterCommands<PlayerCommands>();
             }
             catch
             {
@@ -108,10 +114,6 @@ namespace Yuzuri
             Console.WriteLine($"Yuzuki now Online! Startup took {(DateTime.Now - dateTime).TotalSeconds} seconds");
 
             await BaseClient.ConnectAsync().ConfigureAwait(false);
-
-            SlashClient.RegisterCommands(Assembly.GetExecutingAssembly());
-
-            await SlashClient.StartAsync().ConfigureAwait(false);
 
             await Task.Delay(-1);
 
@@ -133,7 +135,7 @@ namespace Yuzuri
 
         private void RegisterEvents()
         {
-            BaseClient.InteractionCreated += SlashClient.HandleGatewayEvent;
+
             BaseClient.InteractionCreated += (x, y) =>
             {
                 BaseClient.Logger.LogInformation("Interaction Created Received");
@@ -158,6 +160,9 @@ namespace Yuzuri
 
         private async Task OnClientReady(DiscordClient sender, ReadyEventArgs e)
         {
+
+            await sender.UpdateStatusAsync(new DiscordActivity($"Starting up...", ActivityType.Playing));
+            await Task.Delay(TimeSpan.FromMinutes(5)).ConfigureAwait(false);
             await sender.UpdateStatusAsync(new DiscordActivity($"Exploring floor {new Random().Next(101)}", ActivityType.Playing)).ConfigureAwait(false);
         }
 
@@ -208,6 +213,7 @@ namespace Yuzuri
         {
             try
             {
+                
                 YuzuGuild yuzuGuild;
 
                 if (!File.Exists($"data/Guilds/{guild.Id}.json"))
@@ -332,27 +338,30 @@ namespace Yuzuri
                     // Download files from resouces channel
                     try
                     {
-                        DiscordChannel resources = await BaseClient.GetChannelAsync(resourcesChannel).ConfigureAwait(false);
-                        Console.WriteLine($"Checking Resources... Found! Extracting data");
-
-                        foreach (DiscordMessage msg in await resources.GetMessagesAsync().ConfigureAwait(false))
+                        if (resourcesChannel != 0)
                         {
-                            
-                            // IF already extracted skip
-                            if (!yuzuGuild.Resources.Contains(msg.Id))
+                            DiscordChannel resources = await BaseClient.GetChannelAsync(resourcesChannel).ConfigureAwait(false);
+                            Console.WriteLine($"Checking Resources... Found! Extracting data");
+
+                            foreach (DiscordMessage msg in await resources.GetMessagesAsync().ConfigureAwait(false))
                             {
-                                if (msg.Attachments.Count != 0)
+
+                                // IF already extracted skip
+                                if (!yuzuGuild.Resources.Contains(msg.Id))
                                 {
-                                    DiscordAttachment discordAttachment = msg.Attachments[0];
+                                    if (msg.Attachments.Count != 0)
+                                    {
+                                        DiscordAttachment discordAttachment = msg.Attachments[0];
 
-                                    using WebClient client = new WebClient();
-                                    await client.DownloadFileTaskAsync(new Uri(discordAttachment.Url), $"{discordAttachment.FileName}").ConfigureAwait(false);
+                                        using WebClient client = new WebClient();
+                                        await client.DownloadFileTaskAsync(new Uri(discordAttachment.Url), $"{discordAttachment.FileName}").ConfigureAwait(false);
 
-                                    if (discordAttachment.MediaType.Equals("application/zip", StringComparison.OrdinalIgnoreCase))
-                                        ZipFile.ExtractToDirectory(discordAttachment.FileName, $"{Directory.GetCurrentDirectory()}/{msg.Content}", true);
-                                    File.Delete(discordAttachment.FileName);
+                                        if (discordAttachment.MediaType.Equals("application/zip", StringComparison.OrdinalIgnoreCase))
+                                            ZipFile.ExtractToDirectory(discordAttachment.FileName, $"{Directory.GetCurrentDirectory()}/{msg.Content}", true);
+                                        File.Delete(discordAttachment.FileName);
 
-                                    yuzuGuild.Resources.Add(msg.Id);
+                                        yuzuGuild.Resources.Add(msg.Id);
+                                    }
                                 }
                             }
                         }
