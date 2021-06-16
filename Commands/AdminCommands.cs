@@ -25,17 +25,17 @@ namespace Yuzuri.Commands
 {
     public class AdminCommands : BaseCommandModule
     {
-        public ItemManager ItemManager { get; private set; }
+
         public PlayerManager PlayerManager { get; private set; }
         public GuildManager GuildManager { get; private set; }
+        public ItemManager ItemManager { get; private set; }
 
         public AdminCommands(IServiceProvider provider)
         {
-            ItemManager = provider.GetRequiredService<ItemManager>();
             PlayerManager = provider.GetRequiredService<PlayerManager>();
             GuildManager = provider.GetRequiredService<GuildManager>();
+            ItemManager = provider.GetRequiredService<ItemManager>();
         }
-
 
         [Command("reset")]
         [Hidden]
@@ -302,7 +302,8 @@ namespace Yuzuri.Commands
         public async Task ReloadItems(CommandContext ctx)
         {
             await ctx.Channel.SendMessageAsync("Reloading Items...");
-            ItemManager.ReloadItems();
+            //ItemManager.Clear();
+            //Bot.ReloadItems();
         }
 
         [Command("giveitem"), Description("Gives a player an item")]
@@ -411,7 +412,7 @@ namespace Yuzuri.Commands
                             $"{EmojiHelper.GetItemEmoji("RARITY", client)} Rarity: {item.Rarity}\n" +
                             $"{EmojiHelper.GetItemEmoji("ITEMCATEGORY", client)} Item Category: {item.ItemCategory}\n" +
                             $"{EmojiHelper.GetItemEmoji("ITEMEFFECT", client)} ItemEffects: {string.Join(", ", item.ItemEffects)}";
-            
+
             embed.Footer = new DiscordEmbedBuilder.EmbedFooter()
             {
                 Text = "Reply to the message with the following format to change values E.G `STR = 10`\nType `done` when you want to create the item"
@@ -424,7 +425,7 @@ namespace Yuzuri.Commands
         {
             await ctx.Channel.SendMessageAsync("WIP").ConfigureAwait(false);
 
-            var interactivity = Bot.BaseClient.GetInteractivity();
+            var interactivity = ctx.Client.GetInteractivity();
 
             var embed = new DiscordEmbedBuilder()
             {
@@ -437,7 +438,7 @@ namespace Yuzuri.Commands
             embed.AddField("Available Equippable Slots", $"{string.Join("\n", (ItemCategory[])Enum.GetValues(typeof(ItemCategory)))}", true);
             embed.AddField("Available Rarity", $"{string.Join("\n", (Rarity[])Enum.GetValues(typeof(Rarity)))}");
 
-            embed = ItemEmbedBuilder(embed, item, Bot.BaseClient);
+            embed = ItemEmbedBuilder(embed, item, ctx.Client);
 
             var embedMsg = await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
 
@@ -482,7 +483,7 @@ namespace Yuzuri.Commands
                             item.Desc = string.Join(" ", responses[1..]);
                             break;
                         case "ITEMEFFECT":
-                            Enum.TryParse(responses[1].Trim(), out ItemEffect itemEffect);
+                            _ = Enum.TryParse(responses[1].Trim(), out ItemEffect itemEffect);
                             if (item.ItemEffects.Contains(itemEffect)) item.ItemEffects.Remove(itemEffect);
                             else item.ItemEffects.Add(itemEffect);
 
@@ -505,7 +506,7 @@ namespace Yuzuri.Commands
                 }
 
 
-                embed = ItemEmbedBuilder(embed, item, Bot.BaseClient);
+                embed = ItemEmbedBuilder(embed, item, ctx.Client);
 
                 await embedMsg.ModifyAsync(embed: embed.Build()).ConfigureAwait(false);
 
@@ -539,7 +540,7 @@ namespace Yuzuri.Commands
                 ItemManager.WriteNewItem(item, originalName);
             }
 
-            
+
             ItemManager.ReloadItems();
         }
 

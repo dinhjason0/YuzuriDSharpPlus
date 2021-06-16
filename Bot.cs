@@ -98,18 +98,19 @@ namespace Yuzuri
                 //Commands.RegisterCommands<PlayerCommands>();
                 Commands.RegisterCommands<AdminCommands>();
                 //Commands.RegisterCommands<ItemsCommand>();
-                Commands.RegisterCommands(Assembly.GetExecutingAssembly());
-                /*
+                //Commands.RegisterCommands(Assembly.GetExecutingAssembly());
+                
                 Slash = BaseClient.UseSlashCommands(new SlashCommandsConfiguration
                 {
                     Services = services
                 });
-                */
-                //Slash.RegisterCommands<ItemsCommand>();
-                //Slash.RegisterCommands<PlayerCommands>();
+                
+                Slash.RegisterCommands<ItemsCommand>();
+                Slash.RegisterCommands<PlayerCommands>();
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine(ex);
                 Console.WriteLine("Choke at Commands Client");
             }
 
