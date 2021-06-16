@@ -319,7 +319,8 @@ namespace Yuzuri
                                     using WebClient client = new WebClient();
                                     await client.DownloadFileTaskAsync(new Uri(discordAttachment.Url), $"{discordAttachment.FileName}").ConfigureAwait(false);
 
-                                    ZipFile.ExtractToDirectory(discordAttachment.FileName, $"{Directory.GetCurrentDirectory()}/{msg.Content}", true);
+                                    if (discordAttachment.MediaType.Equals("application/zip", StringComparison.OrdinalIgnoreCase))
+                                        ZipFile.ExtractToDirectory(discordAttachment.FileName, $"{Directory.GetCurrentDirectory()}/{msg.Content}", true);
                                     File.Delete(discordAttachment.FileName);
 
                                     yuzuGuild.Resources.Add(msg.Id);
