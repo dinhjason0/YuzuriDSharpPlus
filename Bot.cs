@@ -352,6 +352,7 @@ namespace Yuzuri
                         if (resourcesChannel != 0)
                         {
                             DiscordChannel resources = await BaseClient.GetChannelAsync(resourcesChannel).ConfigureAwait(false);
+
                             Console.WriteLine($"Checking Resources... Found! Extracting data");
 
                             foreach (DiscordMessage msg in await resources.GetMessagesAsync().ConfigureAwait(false))
@@ -362,7 +363,9 @@ namespace Yuzuri
                                 {
                                     if (msg.Attachments.Count != 0)
                                     {
+
                                         DiscordAttachment discordAttachment = msg.Attachments[0];
+
 
                                         using WebClient client = new WebClient();
                                         await client.DownloadFileTaskAsync(new Uri(discordAttachment.Url), $"{discordAttachment.FileName}").ConfigureAwait(false);
