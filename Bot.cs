@@ -20,6 +20,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Yuzuri.Commands;
 //Hi xVeles
+//fuck you jason
+
 
 namespace Yuzuri
 {
