@@ -23,7 +23,7 @@ namespace Yuzuri.Commands
             PlayerManager = provider.GetRequiredService<PlayerManager>();
         }
 
-        [SlashCommand("start", "Start your adventure! Test")]
+        [SlashCommand("start", "Start your adventure!")]
         public async Task Start(InteractionContext ctx)
         {
             try
@@ -45,7 +45,6 @@ namespace Yuzuri.Commands
 
                     await Task.Delay(1300);
 
-
                     embed.Description = "Hello new user, please state your name";
                     await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed.Build())).ConfigureAwait(false);
                     
@@ -54,8 +53,6 @@ namespace Yuzuri.Commands
                             x.Channel == ctx.Channel
                             && x.Author == ctx.User
                         ).ConfigureAwait(false);
-
-
 
                     if (response.TimedOut)
                     {
@@ -131,6 +128,9 @@ namespace Yuzuri.Commands
         [SlashCommand("stats", "View your stats"), RequireRoles(RoleCheckMode.Any, new string[] { "Player" })]
         public async Task Stats(InteractionContext ctx)
         {
+            await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.ChannelMessageWithSource, 
+                new DiscordInteractionResponseBuilder().WithContent("Loading Player data...")).ConfigureAwait(false);
+
             if (PlayerManager.PlayerRoleCheck(ctx.Guild, (DiscordMember)ctx.User))
             {
                 Player player = PlayerManager.ReadPlayerData(ctx.User.Id);
@@ -149,7 +149,6 @@ namespace Yuzuri.Commands
                         status = $"```yaml\nAlive\n```";
                         break;
                 }
-
 
                 var embed = new DiscordEmbedBuilder
                 {
@@ -195,7 +194,7 @@ namespace Yuzuri.Commands
 
                 embed.WithFooter($"Inventory Slots: {player.Inventory.Count}/100");
 
-                await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AddEmbed(embed.Build())).ConfigureAwait(false);
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed.Build())).ConfigureAwait(false);
                 //await ctx.Interaction.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
             }
             else

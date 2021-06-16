@@ -16,16 +16,7 @@ namespace Yuzuri.Managers
 
             Items.Clear();
 
-            foreach (string file in Directory.GetFiles("data/Items"))
-            {
-                using StreamReader r = new StreamReader(file);
-                string json = r.ReadToEnd();
-                Item item = JsonConvert.DeserializeObject<Item>(json);
-                Items.Add(item);
-                r.Close();
-            }
-
-            Console.WriteLine($"{Items.Count}(s) Items found!");
+            LoadItems();
         }
 
         public List<Item> Items = new List<Item>();
@@ -46,6 +37,26 @@ namespace Yuzuri.Managers
             }
 
             return null;
+        }
+
+        public void LoadItems()
+        {
+            foreach (string file in Directory.GetFiles("data/Items"))
+            {
+                using StreamReader r = new StreamReader(file);
+                string json = r.ReadToEnd();
+                Item item = JsonConvert.DeserializeObject<Item>(json);
+                Items.Add(item);
+                r.Close();
+            }
+
+            Console.WriteLine($"{Items.Count}(s) Items found!");
+        }
+
+        public void ReloadItems()
+        {
+            Items.Clear();
+            LoadItems();
         }
 
         public void WriteItem(Item item)

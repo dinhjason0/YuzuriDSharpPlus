@@ -32,10 +32,11 @@ namespace Yuzuri
         public InteractionCreateEventArgs Interaction { get; private set; }
         public ConfigJson Config { get; protected set; }
 
+        public ServiceProvider Provider { get; protected set; }
 
-        public static PlayerManager PlayerManager { get; private set; }
-        public static GuildManager GuildManager { get; private set; }
-        public static ItemManager ItemManager { get; private set; }
+        public PlayerManager PlayerManager { get; private set; }
+        public GuildManager GuildManager { get; private set; }
+        public ItemManager ItemManager { get; private set; }
 
         public async Task RunAsync()
         {
@@ -45,8 +46,8 @@ namespace Yuzuri
             Config = RegisterConfig().Result;
 
             Console.WriteLine("Loading Assets...");
-            PlayerManager = new PlayerManager();
-            GuildManager = new GuildManager();
+            //PlayerManager = new PlayerManager();
+            //GuildManager = new GuildManager();
             //ItemManager = new ItemManager();
             Console.WriteLine("Assets Loaded!");
 
@@ -85,6 +86,8 @@ namespace Yuzuri
             GuildManager = services.GetRequiredService<GuildManager>();
             PlayerManager = services.GetRequiredService<PlayerManager>();
 
+            Provider = services;
+
             try
             {
                 Commands = BaseClient.UseCommandsNext(new CommandsNextConfiguration
@@ -93,16 +96,17 @@ namespace Yuzuri
                     Services = services
                 });
                 //Commands.RegisterCommands<PlayerCommands>();
-                //Commands.RegisterCommands<AdminCommands>();
-                Commands.RegisterCommands<ItemsCommand>();
-                //Commands.RegisterCommands(Assembly.GetExecutingAssembly());
-
+                Commands.RegisterCommands<AdminCommands>();
+                //Commands.RegisterCommands<ItemsCommand>();
+                Commands.RegisterCommands(Assembly.GetExecutingAssembly());
+                /*
                 Slash = BaseClient.UseSlashCommands(new SlashCommandsConfiguration
                 {
-                    Services = services, 
+                    Services = services
                 });
-
-                Slash.RegisterCommands<PlayerCommands>();
+                */
+                //Slash.RegisterCommands<ItemsCommand>();
+                //Slash.RegisterCommands<PlayerCommands>();
             }
             catch
             {
@@ -162,7 +166,13 @@ namespace Yuzuri
         {
 
             await sender.UpdateStatusAsync(new DiscordActivity($"Starting up...", ActivityType.Playing));
-            await Task.Delay(TimeSpan.FromMinutes(5)).ConfigureAwait(false);
+
+            for (int i = 0; i < 10; i++)
+            {
+                await sender.UpdateStatusAsync(new DiscordActivity($"Starting up... {new string('⬛', i)}{new string('⬜', 10 - i)} {10 * i}%", ActivityType.Playing));
+                //await Task.Delay(TimeSpan.FromSeconds(30)).ConfigureAwait(false);
+            }
+
             await sender.UpdateStatusAsync(new DiscordActivity($"Exploring floor {new Random().Next(101)}", ActivityType.Playing)).ConfigureAwait(false);
         }
 
@@ -384,11 +394,6 @@ namespace Yuzuri
                 Console.WriteLine("Guild List could not be retrieved");
                 Console.WriteLine(ex);
             }
-        }
-
-        public static void ReloadItems()
-        {
-            ItemManager = new ItemManager();
         }
 
         private static Task Discord_ApplicationCommandUpdated(DiscordClient sender, ApplicationCommandEventArgs e)

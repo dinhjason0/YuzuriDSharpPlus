@@ -1,5 +1,6 @@
 ﻿using DSharpPlus;
 using DSharpPlus.Entities;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -13,9 +14,14 @@ namespace Yuzuri.Managers
 {
     public class PlayerManager
     {
-        public PlayerManager() { }
+        public GuildManager GuildManager { get; private set; }
 
-        public void WritePlayerData(Player player)
+        public PlayerManager(IServiceProvider provider) 
+        {
+            GuildManager = provider.GetRequiredService<GuildManager>();
+        }
+
+        public static void WritePlayerData(Player player)
         {
             using StreamWriter w = File.CreateText($"data/Players/{player.UserId}.json");
             JsonSerializer searializer = new JsonSerializer();
@@ -35,7 +41,7 @@ namespace Yuzuri.Managers
         public async Task<DiscordChannel> CreatePlayerRoom(DiscordGuild guild, Player player)
         {
 
-            YuzuGuild yuzuGuild = Bot.GuildManager.ReadGuildData(guild.Id);
+            YuzuGuild yuzuGuild = GuildManager.ReadGuildData(guild.Id);
 
             DiscordOverwriteBuilder[] discordOverwrite = new DiscordOverwriteBuilder[1];
             discordOverwrite[0] = new DiscordOverwriteBuilder(await guild.GetMemberAsync(player.UserId).ConfigureAwait(false)) { Allowed = Permissions.AccessChannels };
@@ -56,7 +62,7 @@ namespace Yuzuri.Managers
 
         public static bool PlayerRoleCheck(DiscordGuild guild, DiscordMember member, out DiscordRole playerRole)
         {
-            YuzuGuild yuzuGuild = Bot.GuildManager.ReadGuildData(guild.Id);
+            YuzuGuild yuzuGuild = GuildManager.ReadGuildData(guild.Id);
             playerRole = guild.GetRole(yuzuGuild.RoleId);
 
             return member.Roles.Contains(playerRole);

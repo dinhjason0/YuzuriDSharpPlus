@@ -19,7 +19,7 @@ namespace Yuzuri.Managers
             w.Close();
         }
 
-        public YuzuGuild ReadGuildData(ulong id)
+        public static YuzuGuild ReadGuildData(ulong id)
         {
             using StreamReader r = new StreamReader($"data/Guilds/{id}.json");
             string json = r.ReadToEnd();

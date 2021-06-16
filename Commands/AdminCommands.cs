@@ -26,10 +26,14 @@ namespace Yuzuri.Commands
     public class AdminCommands : BaseCommandModule
     {
         public ItemManager ItemManager { get; private set; }
+        public PlayerManager PlayerManager { get; private set; }
+        public GuildManager GuildManager { get; private set; }
 
         public AdminCommands(IServiceProvider provider)
         {
             ItemManager = provider.GetRequiredService<ItemManager>();
+            PlayerManager = provider.GetRequiredService<PlayerManager>();
+            GuildManager = provider.GetRequiredService<GuildManager>();
         }
 
 
@@ -38,10 +42,10 @@ namespace Yuzuri.Commands
         [RequirePermissions(Permissions.Administrator)]
         public async Task Reset(CommandContext ctx, DiscordMember member)
         {
-            Player player = Bot.PlayerManager.ReadPlayerData(member.Id);
-            YuzuGuild guild = Bot.GuildManager.ReadGuildData(ctx.Guild.Id);
+            Player player = PlayerManager.ReadPlayerData(member.Id);
+            YuzuGuild guild = GuildManager.ReadGuildData(ctx.Guild.Id);
 
-            await Bot.PlayerManager.RemovePlayerRoom(ctx.Guild, player).ConfigureAwait(false);
+            await PlayerManager.RemovePlayerRoom(ctx.Guild, player).ConfigureAwait(false);
             //DiscordMember member = ctx.Guild.getMe;
 
             await member.RevokeRoleAsync(ctx.Guild.GetRole(guild.RoleId)).ConfigureAwait(false);
@@ -298,8 +302,7 @@ namespace Yuzuri.Commands
         public async Task ReloadItems(CommandContext ctx)
         {
             await ctx.Channel.SendMessageAsync("Reloading Items...");
-            ItemManager.Items.Clear();
-            Bot.ReloadItems();
+            ItemManager.ReloadItems();
         }
 
         [Command("giveitem"), Description("Gives a player an item")]
@@ -309,12 +312,12 @@ namespace Yuzuri.Commands
         {
             if (PlayerManager.PlayerRoleCheck(ctx.Guild, member))
             {
-                Player player = Bot.PlayerManager.ReadPlayerData(member.Id);
+                Player player = PlayerManager.ReadPlayerData(member.Id);
 
                 try
                 {
                     Console.WriteLine($"t{itemName}2");
-                    Item item = Bot.ItemManager.GetItem(itemName);
+                    Item item = ItemManager.GetItem(itemName);
 
                     if (player.GiveItem(item))
                     {
@@ -346,7 +349,7 @@ namespace Yuzuri.Commands
                 try
                 {
                     Enum.TryParse(status, out StatusEffects statusEffect);
-                    Player player = Bot.PlayerManager.ReadPlayerData(member.Id);
+                    Player player = PlayerManager.ReadPlayerData(member.Id);
 
                     player.StatusEffects = statusEffect;
                     player.SaveData();
@@ -380,7 +383,7 @@ namespace Yuzuri.Commands
         {
             try
             {
-                Item item = Bot.ItemManager.GetItem(itemName);
+                Item item = ItemManager.GetItem(itemName);
                 Console.WriteLine(item.ItemEffects.Count);
                 if (item == null)
                 {
@@ -529,15 +532,15 @@ namespace Yuzuri.Commands
 
             if (string.Equals(item.Name, originalName, StringComparison.OrdinalIgnoreCase))
             {
-                Bot.ItemManager.WriteItem(item);
+                ItemManager.WriteItem(item);
             }
             else
             {
-                Bot.ItemManager.WriteNewItem(item, originalName);
+                ItemManager.WriteNewItem(item, originalName);
             }
 
             
-            Bot.ReloadItems();
+            ItemManager.ReloadItems();
         }
 
         private async Task ImageLoader(CommandContext ctx, Image img)
