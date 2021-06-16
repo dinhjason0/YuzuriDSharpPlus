@@ -173,7 +173,7 @@ namespace Yuzuri
             for (int i = 0; i < 10; i++)
             {
                 await sender.UpdateStatusAsync(new DiscordActivity($"Starting up... {new string('⬛', i)}{new string('⬜', 10 - i)} {10 * i}%", ActivityType.Playing));
-                //await Task.Delay(TimeSpan.FromSeconds(30)).ConfigureAwait(false);
+                await Task.Delay(TimeSpan.FromSeconds(30)).ConfigureAwait(false);
             }
 
             await sender.UpdateStatusAsync(new DiscordActivity($"Exploring floor {new Random().Next(101)}", ActivityType.Playing)).ConfigureAwait(false);
