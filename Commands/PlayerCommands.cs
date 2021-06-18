@@ -4,6 +4,7 @@ using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Yuzuri.Commons;
@@ -248,7 +249,7 @@ namespace Yuzuri.Commands
 
             var embed = new DiscordEmbedBuilder
             {
-                Title = $"{player.Name}'s Stats",
+                Title = $"{player.Name}'s Inventory",
                 Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail()
                 {
                     Url = ctx.User.AvatarUrl
@@ -266,7 +267,100 @@ namespace Yuzuri.Commands
             embed.WithFooter($"Inventory Slots: {player.Inventory.Count}/100");
 
             await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.ChannelMessageWithSource,
-                new DiscordInteractionResponseBuilder().AddEmbed(embed.Build())).ConfigureAwait(false);
+                new DiscordInteractionResponseBuilder().WithContent("Loading inventory...")).ConfigureAwait(false);
+            try
+            {
+                var builder = new DiscordMessageBuilder()
+                    .WithEmbed(embed.Build())
+                    .WithComponents(new DiscordComponent[]
+                    {
+                    ButtonHelper.MainHand,
+                    ButtonHelper.Helmet,
+                    ButtonHelper.Chestplate,
+                    ButtonHelper.Arms,
+                    ButtonHelper.Leggings
+                    })
+                    .WithComponents(new DiscordComponent[]
+                    {
+                    ButtonHelper.Shoes,
+                    ButtonHelper.Ring,
+                    ButtonHelper.Consumable,
+                    ButtonHelper.None,
+                    ButtonHelper.Close,
+                    });
+
+                var msg = await builder.SendAsync(ctx.Channel).ConfigureAwait(false);
+
+
+                var result = await msg.WaitForButtonAsync(TimeSpan.FromMinutes(2)).ConfigureAwait(false);
+
+                while (!result.TimedOut && result.Result.Interaction.Data.CustomId != "Close")
+                {
+                    embed.ClearFields();
+
+                    string title = "";
+                    List<Item> items = new List<Item>();
+
+                    switch (result.Result.Interaction.Data.CustomId)
+                    {
+                        case "MainHand":
+                            title = "Weapons";
+                            items = player.Inventory.FindAll(i => i.ItemCategory == ItemCategory.MainHand);
+                            break;
+                        case "Helmet":
+                            title = "Helmets";
+                            items = player.Inventory.FindAll(i => i.ItemCategory == ItemCategory.Helmet);
+                            break;
+                        case "Chestplate":
+                            title = "Chestplate";
+                            items = player.Inventory.FindAll(i => i.ItemCategory == ItemCategory.Chestplate);
+                            break;
+                        case "Arms":
+                            title = "Arms";
+                            items = player.Inventory.FindAll(i => i.ItemCategory == ItemCategory.Arms);
+                            break;
+                        case "Leggings":
+                            title = "Leggings";
+                            items = player.Inventory.FindAll(i => i.ItemCategory == ItemCategory.Leggings);
+                            break;
+                        case "Shoes":
+                            title = "Shoes";
+                            items = player.Inventory.FindAll(i => i.ItemCategory == ItemCategory.Shoes);
+                            break;
+                        case "Ring":
+                            title = "Ring";
+                            items = player.Inventory.FindAll(i => i.ItemCategory == ItemCategory.Ring);
+                            break;
+                        case "Consumable":
+                            title = "Consumable";
+                            items = player.Inventory.FindAll(i => i.ItemCategory == ItemCategory.Consumable);
+                            break;
+                        case "None":
+                        default:
+                            title = "Inventory";
+                            items = player.Inventory;
+                            break;
+                    };
+
+                    for (int i = 0, x = 1; i < items.Count; i += 10, x++)
+                    {
+                        embed.AddField($"**{title} - {x}**",
+                            $"{string.Join("\n", items.GetRange(i, (i + 10 > items.Count ? items.Count - i : 10)).Select(i => $"{EmojiHelper.GetItemEmoji(i.ItemCategory)} {i.Name}"))}", true);
+
+                    }
+
+                    await msg.ModifyAsync(builder.WithEmbed(embed.Build())).ConfigureAwait(false);
+
+                    result = await msg.WaitForButtonAsync(TimeSpan.FromMinutes(2)).ConfigureAwait(false);
+                }
+
+                await msg.ModifyAsync(new DiscordMessageBuilder()
+                    .WithEmbed(embed.Build())).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
 
         [SlashCommand("ping", "Sample command")]

@@ -52,12 +52,22 @@ namespace Yuzuri.Helpers
             {
                 "STR" => GetStatEmoji(stat),
                 "MPE" => GetStatEmoji(stat),
-                "DEX" => GetStatEmoji(stat,),
+                "DEX" => GetStatEmoji(stat),
                 "DR" => DiscordEmoji.FromName(client, ":small_red_triangle_down:"),
                 "RARITY" => DiscordEmoji.FromName(client, ":sparkles:"),
                 "DESC" => DiscordEmoji.FromName(client, ":book:"),
                 "ITEMCATEGORY" => DiscordEmoji.FromName(client, ":card_box:"),
                 "ITEMEFFECT" => DiscordEmoji.FromName(client, ":sparkler:"),
+                _ => DiscordEmoji.FromName(client, ":question:")
+            };
+        }
+
+        public static DiscordEmoji GetMiscEmoji(string emoji)
+        {
+            DiscordClient client = Bot.Client;
+            return emoji.ToUpper() switch
+            {
+                "close" => DiscordEmoji.FromName(client, ":x:"),
                 _ => DiscordEmoji.FromName(client, ":question:")
             };
         }

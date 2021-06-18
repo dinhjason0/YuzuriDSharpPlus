@@ -142,11 +142,11 @@ namespace Yuzuri
 
         private void RegisterEvents()
         {
-
+            /*
             Client.InteractionCreated += async (s, e) =>
             {
-//                await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().WithContent(e.Interaction.))
-            };
+                await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().WithContent(e.Interaction.))
+            };*/
             Client.Ready += OnClientReady;
             Client.GuildAvailable += GuildAvailable;   
         }
