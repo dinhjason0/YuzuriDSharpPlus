@@ -30,7 +30,7 @@ namespace Yuzuri.Commands
         public async Task Items(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                new DiscordInteractionResponseBuilder().WithContent("Loading Player data...")).ConfigureAwait(false);
+                new DiscordInteractionResponseBuilder().WithContent("Loading Item data...")).ConfigureAwait(false);
             try
             {
                 var interactivity = ctx.Client.GetInteractivity();
@@ -54,11 +54,13 @@ namespace Yuzuri.Commands
                     };
 
                     embed.AddField("**Items**",
-                        $"{string.Join("\n", ItemManager.Items.GetRange(i, (i + 13 > ItemManager.Items.Count ? ItemManager.Items.Count-i : 13)).Select(i => $"{EmojiHelper.GetItemEmoji(i.ItemCategory, ctx.Client)} {i.Name}"))}");
+                        $"{string.Join("\n", ItemManager.Items.GetRange(i, (i + 13 > ItemManager.Items.Count ? ItemManager.Items.Count-i : 13)).Select(i => $"{EmojiHelper.GetItemEmoji(i.ItemCategory)} {i.Name}"))}");
 
                     pages[x] = new Page("", embed);
 
                 }
+
+                await ctx.DeleteResponseAsync().ConfigureAwait(false);
 
                 await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages,
                     behaviour: PaginationBehaviour.WrapAround, deletion: PaginationDeletion.DeleteEmojis,

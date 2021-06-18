@@ -10,6 +10,11 @@ namespace Yuzuri.Commons
     {
         public ulong UserId { get; set; }
         public string Name { get; set; }
+
+        /// <summary>
+        /// Max HP stat
+        /// </summary>
+        public int MaxHP { get; set; }
         /// <summary>
         /// Health Stat
         /// </summary>
@@ -55,7 +60,8 @@ namespace Yuzuri.Commons
         {
             UserId = userId;
             Name = name;
-            HP = 10;
+            MaxHP = 10;
+            HP = MaxHP;
             STR = 1;
             DEX = 1;
             SPD = 1;
@@ -63,19 +69,9 @@ namespace Yuzuri.Commons
             HIT = 1;
             DHL = 1;
 
-            Inventory = new List<Item>
-            {
-                //Bot.ItemManager.GetItem("Potion")
-            };
+            Inventory = new List<Item>();
 
-            Equipped = new Dictionary<EquippedSlots, Item>()
-            {
-                //{ EquippedSlots.Helmet, Bot.ItemManager.GetItem("Leather Helmet")},
-                //{ EquippedSlots.Chest, Bot.ItemManager.GetItem("Leather Tunic") },
-                //{ EquippedSlots.Arms, Bot.ItemManager.GetItem("Leather Wrist Guards") },
-                //{ EquippedSlots.Legs, Bot.ItemManager.GetItem("Leather Pants") },
-                //{ EquippedSlots.Shoes, Bot.ItemManager.GetItem("Leather Boots") }
-            };
+            Equipped = new Dictionary<EquippedSlots, Item>();
 
             StatusEffects = StatusEffects.None;
 
@@ -108,7 +104,7 @@ namespace Yuzuri.Commons
             //HIT -= oldItem.HIT;
             //DHL -= oldItem.DHL;
 
-            //Equipped[slot] = newItem;
+            Equipped[slot] = newItem;
             //HP += newItem.HP;
             //STR += newItem.STR;
             //DEX += newItem.DEX;
@@ -116,6 +112,11 @@ namespace Yuzuri.Commons
             //MPE += newItem.MPE;
             //HIT += newItem.HIT;
             //DHL += newItem.DHL;
+        }
+
+        public void CalcStats()
+        {
+            //HP = 10 + Equipped[EquippedSlots.Helmet].
         }
 
         public void SetItem(int invIndex, Item item)
@@ -153,7 +154,8 @@ namespace Yuzuri.Commons
             Legs = 3,
             Shoes = 4,
             MainHand = 5,
-            OffHand = 6
+            OffHand = 6,
+            Ring = 7
         }
     }
 }

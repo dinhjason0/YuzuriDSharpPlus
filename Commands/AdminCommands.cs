@@ -404,14 +404,14 @@ namespace Yuzuri.Commands
         {
             embed.Title = $"Create new Item: {item.Name}";
             embed.Description = $"Current Stats\n" +
-                            $"{EmojiHelper.GetItemEmoji("STR", client)} STR: {item.STR}\n" +
-                            $"{EmojiHelper.GetItemEmoji("MPE", client)} MPE: {item.MPE}\n" +
-                            $"{EmojiHelper.GetItemEmoji("DEX", client)} DEX: {item.DEX}\n" +
-                            $"{EmojiHelper.GetItemEmoji("DR", client)} DR: {item.DR}\n" +
-                            $"{EmojiHelper.GetItemEmoji("DESC", client)} Desc: {item.Desc}\n" +
-                            $"{EmojiHelper.GetItemEmoji("RARITY", client)} Rarity: {item.Rarity}\n" +
-                            $"{EmojiHelper.GetItemEmoji("ITEMCATEGORY", client)} Item Category: {item.ItemCategory}\n" +
-                            $"{EmojiHelper.GetItemEmoji("ITEMEFFECT", client)} ItemEffects: {string.Join(", ", item.ItemEffects)}";
+                            $"{EmojiHelper.GetItemEmoji("STR")} STR: {item.STR}\n" +
+                            $"{EmojiHelper.GetItemEmoji("MPE")} MPE: {item.MPE}\n" +
+                            $"{EmojiHelper.GetItemEmoji("DEX")} DEX: {item.DEX}\n" +
+                            $"{EmojiHelper.GetItemEmoji("DR")} DR: {item.DR}\n" +
+                            $"{EmojiHelper.GetItemEmoji("DESC")} Desc: {item.Desc}\n" +
+                            $"{EmojiHelper.GetItemEmoji("RARITY")} Rarity: {item.Rarity}\n" +
+                            $"{EmojiHelper.GetItemEmoji("ITEMCATEGORY")} Item Category: {item.ItemCategory}\n" +
+                            $"{EmojiHelper.GetItemEmoji("ITEMEFFECT")} ItemEffects: {string.Join(", ", item.ItemEffects)}";
 
             embed.Footer = new DiscordEmbedBuilder.EmbedFooter()
             {

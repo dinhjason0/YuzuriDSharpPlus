@@ -15,10 +15,30 @@ namespace Yuzuri.Managers
     public class PlayerManager
     {
         public GuildManager GuildManager { get; private set; }
+        public ItemManager ItemManager { get; private set; }
 
         public PlayerManager(IServiceProvider provider) 
         {
             GuildManager = provider.GetRequiredService<GuildManager>();
+            ItemManager = provider.GetRequiredService<ItemManager>();
+        }
+
+        public Player NewPlayer(ulong id, string name)
+        {
+            Player player = new Player(id, name);
+
+            player.GiveItem(ItemManager.GetItem("Potion"));
+            player.GiveItem(ItemManager.GetItem("Copper Sword"));
+
+            player.EquipItem(Player.EquippedSlots.Helmet, ItemManager.GetItem("Leather Helmet"));
+            player.EquipItem(Player.EquippedSlots.Chest, ItemManager.GetItem("Leather Tunic"));
+            player.EquipItem(Player.EquippedSlots.Arms, ItemManager.GetItem("Leather Wrist Guards"));
+            player.EquipItem(Player.EquippedSlots.Legs, ItemManager.GetItem("Leather Pants"));
+            player.EquipItem(Player.EquippedSlots.Shoes, ItemManager.GetItem("Leather Boots"));
+            player.EquipItem(Player.EquippedSlots.Ring, ItemManager.GetItem("Copper Ring"));
+
+            return player;
+
         }
 
         public static void WritePlayerData(Player player)

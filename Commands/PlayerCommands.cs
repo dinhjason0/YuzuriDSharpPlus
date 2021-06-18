@@ -116,7 +116,8 @@ namespace Yuzuri.Commands
                 }
                 else
                 {
-                    await ctx.Channel.SendMessageAsync($"You're already a player!").ConfigureAwait(false);
+                    await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.ChannelMessageWithSource,
+                        new DiscordInteractionResponseBuilder().WithContent("You're already a player!")).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -162,22 +163,24 @@ namespace Yuzuri.Commands
                 };
 
                 embed.AddField("\n**Stats**\n",
-                    $"{EmojiHelper.GetStatEmoji("HP", Bot.BaseClient)} HP: {player.HP}\n" +
-                    $"{EmojiHelper.GetStatEmoji("STR", Bot.BaseClient)} STR: {player.STR}\n" +
-                    $"{EmojiHelper.GetStatEmoji("DEX", Bot.BaseClient)} DEX: {player.DEX}\n" +
-                    $"{EmojiHelper.GetStatEmoji("SPD", Bot.BaseClient)} SPD: {player.SPD}\n" +
-                    $"{EmojiHelper.GetStatEmoji("MPE", Bot.BaseClient)} MPE: {player.MPE}\n" +
-                    $"{EmojiHelper.GetStatEmoji("DHL", Bot.BaseClient)} DHL: {player.DHL}\n" +
-                    $"{EmojiHelper.GetStatEmoji("HIT", Bot.BaseClient)} HIT: {player.HIT}", true);
+                    $"{EmojiHelper.GetStatEmoji("HP")} HP: {player.HP}\n" +
+                    $"{EmojiHelper.GetStatEmoji("STR")} STR: {player.STR}\n" +
+                    $"{EmojiHelper.GetStatEmoji("DEX")} DEX: {player.DEX}\n" +
+                    $"{EmojiHelper.GetStatEmoji("SPD")} SPD: {player.SPD}\n" +
+                    $"{EmojiHelper.GetStatEmoji("MPE")} MPE: {player.MPE}\n" +
+                    $"{EmojiHelper.GetStatEmoji("DHL")} DHL: {player.DHL}\n" +
+                    $"{EmojiHelper.GetStatEmoji("HIT")} HIT: {player.HIT}", true);
                 try
                 {
-
                     embed.AddField("**Equipped**",
-                        $"{EmojiHelper.GetItemEmoji(ItemCategory.Helmet, Bot.BaseClient)} Helmet: {player.Equipped[Player.EquippedSlots.Helmet].Name}\n" +
-                        $"{EmojiHelper.GetItemEmoji(ItemCategory.Chestplate, Bot.BaseClient)} Chest: {player.Equipped[Player.EquippedSlots.Chest].Name}\n" +
-                        $"{EmojiHelper.GetItemEmoji(ItemCategory.Arms, Bot.BaseClient)} Gloves: {player.Equipped[Player.EquippedSlots.Arms].Name}\n" +
-                        $"{EmojiHelper.GetItemEmoji(ItemCategory.Leggings, Bot.BaseClient)} Legs: {player.Equipped[Player.EquippedSlots.Legs].Name}\n" +
-                        $"{EmojiHelper.GetItemEmoji(ItemCategory.Shoes, Bot.BaseClient)} Feet: {player.Equipped[Player.EquippedSlots.Shoes].Name}\n", true);
+                        $"{EmojiHelper.GetItemEmoji(ItemCategory.MainHand)} Main Hand: {player.Equipped[Player.EquippedSlots.MainHand].Name}\n" +
+                        $"{EmojiHelper.GetItemEmoji(ItemCategory.Helmet)} Helmet: {player.Equipped[Player.EquippedSlots.Helmet].Name}\n" +
+                        $"{EmojiHelper.GetItemEmoji(ItemCategory.Chestplate)} Chest: {player.Equipped[Player.EquippedSlots.Chest].Name}\n" +
+                        $"{EmojiHelper.GetItemEmoji(ItemCategory.Arms)} Gloves: {player.Equipped[Player.EquippedSlots.Arms].Name}\n" +
+                        $"{EmojiHelper.GetItemEmoji(ItemCategory.Leggings)} Legs: {player.Equipped[Player.EquippedSlots.Legs].Name}\n" +
+                        $"{EmojiHelper.GetItemEmoji(ItemCategory.Shoes)} Feet: {player.Equipped[Player.EquippedSlots.Shoes].Name}\n" +
+                        $"{EmojiHelper.GetItemEmoji(ItemCategory.Ring)} Ring: {player.Equipped[Player.EquippedSlots.Ring].Name}\n",
+                        true);
                 }
                 catch (Exception ex)
                 {
@@ -188,7 +191,7 @@ namespace Yuzuri.Commands
                 for (int i = 0, x = 1; i < player.Inventory.Count; i += 10, x++)
                 {
                     embed.AddField($"**Inventory - {x}**",
-                        $"{string.Join("\n", player.Inventory.GetRange(i, (i + 10 > player.Inventory.Count ? player.Inventory.Count - i : 10)).Select(i => $"{EmojiHelper.GetItemEmoji(i.ItemCategory, Bot.BaseClient)} {i.Name}"))}", true);
+                        $"{string.Join("\n", player.Inventory.GetRange(i, (i + 10 > player.Inventory.Count ? player.Inventory.Count - i : 10)).Select(i => $"{EmojiHelper.GetItemEmoji(i.ItemCategory)} {i.Name}"))}", true);
 
                 }
 
@@ -199,7 +202,8 @@ namespace Yuzuri.Commands
             }
             else
             {
-                await ctx.Channel.SendMessageAsync("You haven't started your adventure yet! Use the `start` command!").ConfigureAwait(false);
+                await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.ChannelMessageWithSource, 
+                    new DiscordInteractionResponseBuilder().WithContent("You haven't started your adventure yet! Use the `start` command!")).ConfigureAwait(false);
             }
         }
 
@@ -211,13 +215,13 @@ namespace Yuzuri.Commands
                 var interactivity = ctx.Client.GetInteractivity();
 
                 var msg = await ctx.Interaction.Channel.SendMessageAsync("Are you sure you want to end your adventure? React to the tick emoji to confirm.");
-                await msg.CreateReactionAsync(DiscordEmoji.FromName(Bot.BaseClient, ":white_check_mark:")).ConfigureAwait(false);
+                await msg.CreateReactionAsync(DiscordEmoji.FromName(Bot.Client, ":white_check_mark:")).ConfigureAwait(false);
 
                 var reaction = await interactivity
                     .WaitForReactionAsync(x =>
                         x.Channel == ctx.Channel
                         && x.User == ctx.User
-                        && x.Emoji == DiscordEmoji.FromName(Bot.BaseClient, ":white_check_mark:"))
+                        && x.Emoji == DiscordEmoji.FromName(Bot.Client, ":white_check_mark:"))
                     .ConfigureAwait(false);
 
                 if (reaction.TimedOut)
@@ -255,13 +259,14 @@ namespace Yuzuri.Commands
             for (int i = 0, x = 1; i < player.Inventory.Count; i += 10, x++)
             {
                 embed.AddField($"**Inventory - {x}**",
-                    $"{string.Join("\n", player.Inventory.GetRange(i, (i + 10 > player.Inventory.Count ? player.Inventory.Count - i : 10)).Select(i => $"{EmojiHelper.GetItemEmoji(i.ItemCategory, Bot.BaseClient)} {i.Name}"))}", true);
+                    $"{string.Join("\n", player.Inventory.GetRange(i, (i + 10 > player.Inventory.Count ? player.Inventory.Count - i : 10)).Select(i => $"{EmojiHelper.GetItemEmoji(i.ItemCategory)} {i.Name}"))}", true);
 
             }
 
             embed.WithFooter($"Inventory Slots: {player.Inventory.Count}/100");
 
-            var msg = await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
+            await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.ChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder().AddEmbed(embed.Build())).ConfigureAwait(false);
         }
 
         [SlashCommand("ping", "Sample command")]

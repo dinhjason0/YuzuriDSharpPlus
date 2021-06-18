@@ -9,8 +9,9 @@ namespace Yuzuri.Helpers
 {
     public class EmojiHelper
     {
-        public static DiscordEmoji GetItemEmoji(ItemCategory category, DiscordClient client)
+        public static DiscordEmoji GetItemEmoji(ItemCategory category)
         {
+            DiscordClient client = Bot.Client;
             return category switch
             {
                 ItemCategory.Helmet => DiscordEmoji.FromName(client, ":billed_cap:"),
@@ -26,8 +27,9 @@ namespace Yuzuri.Helpers
             };
         }
 
-        public static DiscordEmoji GetStatEmoji(string stat, DiscordClient client)
+        public static DiscordEmoji GetStatEmoji(string stat)
         {
+            DiscordClient client = Bot.Client;
             return stat.ToUpper() switch
             {
                 "HP" => DiscordEmoji.FromName(client, ":sparkling_heart:"),
@@ -37,18 +39,20 @@ namespace Yuzuri.Helpers
                 "MPE" => DiscordEmoji.FromName(client, ":crystal_ball:"),
                 "DHL" => DiscordEmoji.FromName(client, ":game_die:"),
                 "HIT" => DiscordEmoji.FromName(client, ":dart:"),
+                "RING" => DiscordEmoji.FromName(client, ":ring:"),
                 _ => DiscordEmoji.FromName(client, ":question:")
 
             };
         }
 
-        public static DiscordEmoji GetItemEmoji(string stat, DiscordClient client)
+        public static DiscordEmoji GetItemEmoji(string stat)
         {
+            DiscordClient client = Bot.Client;
             return stat.ToUpper() switch
             {
-                "STR" => GetStatEmoji(stat, client),
-                "MPE" => GetStatEmoji(stat, client),
-                "DEX" => GetStatEmoji(stat, client),
+                "STR" => GetStatEmoji(stat),
+                "MPE" => GetStatEmoji(stat),
+                "DEX" => GetStatEmoji(stat,),
                 "DR" => DiscordEmoji.FromName(client, ":small_red_triangle_down:"),
                 "RARITY" => DiscordEmoji.FromName(client, ":sparkles:"),
                 "DESC" => DiscordEmoji.FromName(client, ":book:"),
