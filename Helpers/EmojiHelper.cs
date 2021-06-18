@@ -67,7 +67,7 @@ namespace Yuzuri.Helpers
             DiscordClient client = Bot.Client;
             return emoji.ToUpper() switch
             {
-                "close" => DiscordEmoji.FromName(client, ":x:"),
+                "CLOSE" => DiscordEmoji.FromName(client, ":x:"),
                 _ => DiscordEmoji.FromName(client, ":question:")
             };
         }

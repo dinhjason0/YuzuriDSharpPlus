@@ -19,7 +19,7 @@ namespace Yuzuri.Helpers
         public static DiscordButtonComponent Ring => new DiscordButtonComponent(ButtonStyle.Secondary, "Ring", "Ring", false, new DiscordComponentEmoji(EmojiHelper.GetItemEmoji(ItemCategory.Ring)));
         public static DiscordButtonComponent Consumable => new DiscordButtonComponent(ButtonStyle.Secondary, "Consumable", "Consumable", false, new DiscordComponentEmoji(EmojiHelper.GetItemEmoji(ItemCategory.Consumable)));
         public static DiscordButtonComponent None => new DiscordButtonComponent(ButtonStyle.Secondary, "None", "None", false, new DiscordComponentEmoji(EmojiHelper.GetItemEmoji(ItemCategory.None)));
-        public static DiscordButtonComponent Close => new DiscordButtonComponent(ButtonStyle.Danger, "Close", "Close", false, new DiscordComponentEmoji(EmojiHelper.GetItemEmoji(ItemCategory.None)));
+        public static DiscordButtonComponent Close => new DiscordButtonComponent(ButtonStyle.Danger, "Close", "Close", false, new DiscordComponentEmoji(EmojiHelper.GetMiscEmoji("Close")));
             
     }
 }

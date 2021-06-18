@@ -270,32 +270,30 @@ namespace Yuzuri.Commands
                 new DiscordInteractionResponseBuilder().WithContent("Loading inventory...")).ConfigureAwait(false);
             try
             {
-                var builder = new DiscordMessageBuilder()
-                    .WithEmbed(embed.Build())
+                var builder = new DiscordWebhookBuilder()
+                    .AddEmbed(embed.Build())
                     .WithComponents(new DiscordComponent[]
                     {
-                    ButtonHelper.MainHand,
-                    ButtonHelper.Helmet,
-                    ButtonHelper.Chestplate,
-                    ButtonHelper.Arms,
-                    ButtonHelper.Leggings
+                    ButtonHelper.MainHand, ButtonHelper.Helmet, ButtonHelper.Chestplate,
+                    ButtonHelper.Arms, ButtonHelper.Leggings
                     })
                     .WithComponents(new DiscordComponent[]
                     {
-                    ButtonHelper.Shoes,
-                    ButtonHelper.Ring,
-                    ButtonHelper.Consumable,
-                    ButtonHelper.None,
-                    ButtonHelper.Close,
+                    ButtonHelper.Shoes, ButtonHelper.Ring, ButtonHelper.Consumable,
+                    ButtonHelper.None, ButtonHelper.Close
                     });
 
-                var msg = await builder.SendAsync(ctx.Channel).ConfigureAwait(false);
+                //var msg = await builder.SendAsync(ctx.Channel).ConfigureAwait(false);
+                var msg = await ctx.EditResponseAsync(builder).ConfigureAwait(false);
 
-
-                var result = await msg.WaitForButtonAsync(TimeSpan.FromMinutes(2)).ConfigureAwait(false);
+                var result = await msg.WaitForButtonAsync(ctx.User, TimeSpan.FromMinutes(2)).ConfigureAwait(false);
+           
+                //var result = await interactivity.WaitForButtonAsync(msg, TimeSpan.FromMinutes(2));
 
                 while (!result.TimedOut && result.Result.Interaction.Data.CustomId != "Close")
                 {
+                    await result.Result.Interaction.CreateResponseAsync(DSharpPlus.InteractionResponseType.DefferedMessageUpdate).ConfigureAwait(false);
+
                     embed.ClearFields();
 
                     string title = "";
@@ -349,13 +347,27 @@ namespace Yuzuri.Commands
 
                     }
 
-                    await msg.ModifyAsync(builder.WithEmbed(embed.Build())).ConfigureAwait(false);
+                    builder = new DiscordWebhookBuilder()
+                    .AddEmbed(embed.Build())
+                    .WithComponents(new DiscordComponent[]
+                    {
+                    ButtonHelper.MainHand, ButtonHelper.Helmet, ButtonHelper.Chestplate,
+                    ButtonHelper.Arms, ButtonHelper.Leggings
+                    })
+                    .WithComponents(new DiscordComponent[]
+                    {
+                    ButtonHelper.Shoes, ButtonHelper.Ring, ButtonHelper.Consumable,
+                    ButtonHelper.None, ButtonHelper.Close,
+                    });
 
-                    result = await msg.WaitForButtonAsync(TimeSpan.FromMinutes(2)).ConfigureAwait(false);
+                    await ctx.EditResponseAsync(builder).ConfigureAwait(false);
+                    
+
+                    result = await msg.WaitForButtonAsync(ctx.User, TimeSpan.FromMinutes(2)).ConfigureAwait(false);
+                    
                 }
 
-                await msg.ModifyAsync(new DiscordMessageBuilder()
-                    .WithEmbed(embed.Build())).ConfigureAwait(false);
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
