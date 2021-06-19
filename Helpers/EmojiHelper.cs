@@ -19,7 +19,7 @@ namespace Yuzuri.Helpers
                 ItemCategory.Arms => DiscordEmoji.FromName(client, ":gloves:"),
                 ItemCategory.Leggings => DiscordEmoji.FromName(client, ":jeans:"),
                 ItemCategory.Shoes => DiscordEmoji.FromName(client, ":athletic_shoe:"),
-                ItemCategory.MainHand => DiscordEmoji.FromName(client, ":dagger:"),
+                ItemCategory.Weapon => DiscordEmoji.FromName(client, ":dagger:"),
                 ItemCategory.OffHand => DiscordEmoji.FromName(client, ":shield:"),
                 ItemCategory.Consumable => DiscordEmoji.FromName(client, ":wine_glass:"),
                 ItemCategory.Ring => DiscordEmoji.FromName(client, ":ring:"),

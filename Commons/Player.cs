@@ -146,6 +146,11 @@ namespace Yuzuri.Commons
             PlayerManager.WritePlayerData(this);
         }
 
+        public List<Item> GetItems(ItemCategory itemCategory)
+        {
+            return Inventory.FindAll(i => i.ItemCategory == itemCategory);
+        }
+
         public enum EquippedSlots
         {
             Helmet = 0,

@@ -12,7 +12,7 @@ namespace Yuzuri.Commons
         Leggings = 3,
         Arms = 4,
         Shoes = 5,
-        MainHand = 6,
+        Weapon = 6,
         OffHand = 7,
         Consumable = 8,
         Ring = 9

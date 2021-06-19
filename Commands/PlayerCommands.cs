@@ -174,7 +174,7 @@ namespace Yuzuri.Commands
                 try
                 {
                     embed.AddField("**Equipped**",
-                        $"{EmojiHelper.GetItemEmoji(ItemCategory.MainHand)} Main Hand: {player.Equipped[Player.EquippedSlots.MainHand].Name}\n" +
+                        $"{EmojiHelper.GetItemEmoji(ItemCategory.Weapon)} Main Hand: {player.Equipped[Player.EquippedSlots.MainHand].Name}\n" +
                         $"{EmojiHelper.GetItemEmoji(ItemCategory.Helmet)} Helmet: {player.Equipped[Player.EquippedSlots.Helmet].Name}\n" +
                         $"{EmojiHelper.GetItemEmoji(ItemCategory.Chestplate)} Chest: {player.Equipped[Player.EquippedSlots.Chest].Name}\n" +
                         $"{EmojiHelper.GetItemEmoji(ItemCategory.Arms)} Gloves: {player.Equipped[Player.EquippedSlots.Arms].Name}\n" +
@@ -280,7 +280,7 @@ namespace Yuzuri.Commands
                     .WithComponents(new DiscordComponent[]
                     {
                     ButtonHelper.Shoes, ButtonHelper.Ring, ButtonHelper.Consumable,
-                    ButtonHelper.None, ButtonHelper.Close
+                    ButtonHelper.None, ButtonHelper.RedClose
                     });
 
                 //var msg = await builder.SendAsync(ctx.Channel).ConfigureAwait(false);
@@ -299,46 +299,18 @@ namespace Yuzuri.Commands
                     string title = "";
                     List<Item> items = new List<Item>();
 
-                    switch (result.Result.Interaction.Data.CustomId)
+                    if (result.Result.Interaction.Data.CustomId.Equals("None"))
                     {
-                        case "MainHand":
-                            title = "Weapons";
-                            items = player.Inventory.FindAll(i => i.ItemCategory == ItemCategory.MainHand);
-                            break;
-                        case "Helmet":
-                            title = "Helmets";
-                            items = player.Inventory.FindAll(i => i.ItemCategory == ItemCategory.Helmet);
-                            break;
-                        case "Chestplate":
-                            title = "Chestplate";
-                            items = player.Inventory.FindAll(i => i.ItemCategory == ItemCategory.Chestplate);
-                            break;
-                        case "Arms":
-                            title = "Arms";
-                            items = player.Inventory.FindAll(i => i.ItemCategory == ItemCategory.Arms);
-                            break;
-                        case "Leggings":
-                            title = "Leggings";
-                            items = player.Inventory.FindAll(i => i.ItemCategory == ItemCategory.Leggings);
-                            break;
-                        case "Shoes":
-                            title = "Shoes";
-                            items = player.Inventory.FindAll(i => i.ItemCategory == ItemCategory.Shoes);
-                            break;
-                        case "Ring":
-                            title = "Ring";
-                            items = player.Inventory.FindAll(i => i.ItemCategory == ItemCategory.Ring);
-                            break;
-                        case "Consumable":
-                            title = "Consumable";
-                            items = player.Inventory.FindAll(i => i.ItemCategory == ItemCategory.Consumable);
-                            break;
-                        case "None":
-                        default:
-                            title = "Inventory";
-                            items = player.Inventory;
-                            break;
-                    };
+                        title = "Inventory";
+                        items = player.Inventory;
+                    }
+                    else
+                    {
+                        title = result.Result.Interaction.Data.CustomId;
+                        items = player.GetItems(Enum.Parse<ItemCategory>(result.Result.Interaction.Data.CustomId));
+                    }
+
+                    
 
                     for (int i = 0, x = 1; i < items.Count; i += 10, x++)
                     {
@@ -357,7 +329,7 @@ namespace Yuzuri.Commands
                     .WithComponents(new DiscordComponent[]
                     {
                     ButtonHelper.Shoes, ButtonHelper.Ring, ButtonHelper.Consumable,
-                    ButtonHelper.None, ButtonHelper.Close,
+                    ButtonHelper.None, ButtonHelper.RedClose,
                     });
 
                     await ctx.EditResponseAsync(builder).ConfigureAwait(false);
