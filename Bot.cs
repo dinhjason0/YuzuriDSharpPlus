@@ -80,6 +80,7 @@ namespace Yuzuri
                 .AddSingleton<ItemManager>()
                 .AddSingleton<PlayerManager>()
                 .AddSingleton<GuildManager>()
+                .AddSingleton<ImageProcesserManager>()
                 .BuildServiceProvider();
 
             ItemManager = services.GetRequiredService<ItemManager>();

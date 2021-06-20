@@ -29,12 +29,14 @@ namespace Yuzuri.Commands
         public PlayerManager PlayerManager { get; private set; }
         public GuildManager GuildManager { get; private set; }
         public ItemManager ItemManager { get; private set; }
+        public ImageProcesserManager ImageProcesserManager { get; private set; }
 
         public AdminCommands(IServiceProvider provider)
         {
             PlayerManager = provider.GetRequiredService<PlayerManager>();
             GuildManager = provider.GetRequiredService<GuildManager>();
             ItemManager = provider.GetRequiredService<ItemManager>();
+            ImageProcesserManager = provider.GetRequiredService<ImageProcesserManager>();
         }
 
         [Command("reset")]
@@ -68,7 +70,7 @@ namespace Yuzuri.Commands
             {
                 var pngEncoder = new PngEncoder();
                 await Task.Delay(100);
-                ImageProcesserManager imageProcesserManager = new ImageProcesserManager();
+                ImageProcesserManager imageProcesserManager = ImageProcesserManager;
                 Rectangle rec = imageProcesserManager.CropLocation(target);
                 var clone = image.Clone(img => img
                 .Crop(rec));
@@ -127,7 +129,7 @@ namespace Yuzuri.Commands
         [RequirePermissions(Permissions.Administrator)]
         public async Task CallDecoder(CommandContext ctx)
         {
-            Managers.ImageProcesserManager spriteSheetDecoder = new ImageProcesserManager();
+            Managers.ImageProcesserManager spriteSheetDecoder = ImageProcesserManager;
             string targetSprite = "Beauty_Dress";
             List<int> coordinateSet = spriteSheetDecoder.SpriteDestination(targetSprite);
             var msg = await new DiscordMessageBuilder()
@@ -142,7 +144,7 @@ namespace Yuzuri.Commands
         public async Task SpriteDestinationTest(CommandContext ctx)
         {
             Console.WriteLine("Trying to write command");
-            ImageProcesserManager spriteSheetDecoder = new ImageProcesserManager();
+            ImageProcesserManager spriteSheetDecoder = ImageProcesserManager;
             await Task.Delay(100);
             List<List<int>> spriteDestinationLists = spriteSheetDecoder.SpriteDestinationList();
             string sendMessage = "";
@@ -192,7 +194,7 @@ namespace Yuzuri.Commands
                 {
                     Console.WriteLine($"{member.Id}'s portrait isn't found, generating new portrait");
                     //Get .json
-                    ImageProcesserManager spriteSheetDecoder = new ImageProcesserManager();
+                    ImageProcesserManager spriteSheetDecoder = ImageProcesserManager;
                     await Task.Delay(100);
                     List<string> spriteNames = spriteSheetDecoder.SpriteNames();
                     List<Sprite> playerSpriteDestinationLists = new List<Sprite>();
@@ -291,7 +293,7 @@ namespace Yuzuri.Commands
             List<int> coordssetinteger = new List<int>();
             coordssetinteger.Add(12);
             coordssetinteger.Add(12);
-            ImageProcesserManager imageProcess = new ImageProcesserManager();
+            ImageProcesserManager imageProcess = ImageProcesserManager;
             imageProcess.ResizePlayerSheetAssistant(coordssetinteger);
             await Task.Delay(100);
         }
