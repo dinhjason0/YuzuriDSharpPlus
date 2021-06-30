@@ -335,8 +335,7 @@ namespace Yuzuri.Commands
                     await ctx.EditResponseAsync(builder).ConfigureAwait(false);
                     
 
-                    result = await msg.WaitForButtonAsync(ctx.User, TimeSpan.FromMinutes(2)).ConfigureAwait(false);
-                    
+                    result = await msg.WaitForButtonAsync(ctx.User, TimeSpan.FromMinutes(2)).ConfigureAwait(false);                    
                 }
 
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed)).ConfigureAwait(false);
@@ -377,6 +376,47 @@ namespace Yuzuri.Commands
                 Console.WriteLine(ex);
             }
 
+        }
+
+        [SlashCommand("battletest", "Battle Input tests")]
+        public async Task BattleTest(InteractionContext ctx)
+        {
+            try {
+                await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.DeferredChannelMessageWithSource).ConfigureAwait(false);
+
+                DiscordWebhookBuilder builder = new DiscordWebhookBuilder()
+                .WithContent("Combat test, give button inputs")
+                .WithComponents(new DiscordComponent[]
+                {
+                    ButtonHelper.MainHand, ButtonHelper.Helmet, ButtonHelper.Chestplate,
+                    ButtonHelper.Arms, ButtonHelper.Leggings
+                });
+
+
+                var timeout = DateTime.Now + TimeSpan.FromMinutes(2);
+
+                Dictionary<ulong, string> action = new Dictionary<ulong, string>();
+
+                while (DateTime.Now < timeout)
+                {
+                    var msg = await ctx.EditResponseAsync(builder).ConfigureAwait(false);
+
+                    var result = await msg.WaitForButtonAsync(TimeSpan.FromMinutes(2)).ConfigureAwait(false);
+
+                    if (!result.TimedOut)
+                    {
+                        await result.Result.Interaction.CreateResponseAsync(DSharpPlus.InteractionResponseType.DefferedMessageUpdate).ConfigureAwait(false);
+
+                        action[result.Result.Interaction.User.Id] = result.Result.Interaction.Data.CustomId;
+                    }
+                }
+
+                await ctx.Channel.SendMessageAsync(string.Join(", ", action.Select(x => $"{x.Key}: {x.Value}")));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
     }
 }

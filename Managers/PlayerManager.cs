@@ -38,7 +38,6 @@ namespace Yuzuri.Managers
             player.EquipItem(Player.EquippedSlots.Ring, ItemManager.GetItem("Copper Ring"));
 
             return player;
-
         }
 
         public static void WritePlayerData(Player player)

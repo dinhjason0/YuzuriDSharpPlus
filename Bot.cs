@@ -55,7 +55,7 @@ namespace Yuzuri
             {
                 Client = new DiscordClient(new DiscordConfiguration
                 {
-                    Token = Debug.Token,
+                    Token = Debug.Token2,
                     TokenType = TokenType.Bot,
                     AutoReconnect = true,
                     MinimumLogLevel = LogLevel.Debug,

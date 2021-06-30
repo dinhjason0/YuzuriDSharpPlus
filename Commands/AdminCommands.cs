@@ -167,7 +167,7 @@ namespace Yuzuri.Commands
             Console.WriteLine("Accessing loadsprite command");
             if (PlayerManager.PlayerRoleCheck(ctx.Guild, ctx.Member))
             {
-                ImageProcesserManager processerManager = new ImageProcesserManager();
+                ImageProcesserManager processerManager = ImageProcesserManager;
                 //Search through PlayerSheetAssistant to see if user.Id is in Assistant.json
                 //If user.Id is found in Assistant.json
                 //Rip coordinates from .json
