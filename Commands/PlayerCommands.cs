@@ -434,38 +434,65 @@ namespace Yuzuri.Commands
 
                     await ctx.EditResponseAsync(builder).ConfigureAwait(false);
 
-                    var selectMenu = new DiscordFollowupMessageBuilder()
-                        .WithContent("Select the equipment from the select menu you wish to equip")
-                        .AddComponents(new DiscordSelectComponent("equipment", title,
-                            DiscordComponentHelper.EquipmentMenuSelectOption(player.GetItems(Enum.Parse<ItemCategory>(btnResponse.Result.Interaction.Data.CustomId)))));
-
-                    var menuMsg = await btnResponse.Result.Interaction.CreateFollowupMessageAsync(selectMenu).ConfigureAwait(false);
-
-
+                    List<Item> items = player.GetItems(Enum.Parse<ItemCategory>(btnResponse.Result.Interaction.Data.CustomId));
                     var menuResponse = btnResponse;
 
-                    await Task.WhenAny(
-                        invMsg.WaitForButtonAsync(ctx.User, TimeSpan.FromMinutes(3)).ContinueWith(async x => 
-                        { 
-                            btnResponse = x.Result;
-                            await btnResponse.Result.Interaction.CreateResponseAsync(DSharpPlus.InteractionResponseType.DeferredMessageUpdate).ConfigureAwait(false);
-                        }),
-                        menuMsg.WaitForSelectAsync("equipment", TimeSpan.FromMinutes(3)).ContinueWith(async x =>
-                        {
-                            menuResponse = x.Result;
-                            await menuResponse.Result.Interaction.CreateResponseAsync(DSharpPlus.InteractionResponseType.DeferredMessageUpdate).ConfigureAwait(false);
-                            Item item = player.GetItem(menuResponse.Result.Interaction.Data.Values[0].Split("_")[1]);
-                            player.EquipItem(item.ItemCategory, item);
-                            await menuResponse.Result.Interaction.DeleteFollowupMessageAsync(menuResponse.Result.Message.Id).ConfigureAwait(false);
-                            await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed)).ConfigureAwait(false);
-                        }),
-                        Task.Delay(TimeSpan.FromMinutes(2)).ContinueWith(async x =>
-                        {
-                            await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed)).ConfigureAwait(false);
-                            await ctx.DeleteFollowupAsync(menuResponse.Result.Message.Id).ConfigureAwait(false);
-                            return Task.CompletedTask;
-                        }));
+                    if (items.Count > 0)
+                    {
+                        var selectMenu = new DiscordFollowupMessageBuilder()
+                            .WithContent("Select the equipment from the select menu you wish to equip")
+                            .AddComponents(new DiscordSelectComponent("equipment", title,
+                                DiscordComponentHelper.EquipmentMenuSelectOption(items)));
+
+                        var menuMsg = await btnResponse.Result.Interaction.CreateFollowupMessageAsync(selectMenu).ConfigureAwait(false);
+
+                        await Task.WhenAny(
+                            invMsg.WaitForButtonAsync(ctx.User, TimeSpan.FromMinutes(3)).ContinueWith(async x =>
+                            {
+                                btnResponse = x.Result;
+
+                                await btnResponse.Result.Interaction.CreateResponseAsync(DSharpPlus.InteractionResponseType.DeferredMessageUpdate).ConfigureAwait(false);
+                                await menuResponse.Result.Interaction.DeleteFollowupMessageAsync(menuMsg.Id).ConfigureAwait(false);
+
+                            }),
+                            menuMsg.WaitForSelectAsync("equipment", TimeSpan.FromMinutes(3)).ContinueWith(async x =>
+                            {
+                                menuResponse = x.Result;
+                                await menuResponse.Result.Interaction.CreateResponseAsync(DSharpPlus.InteractionResponseType.DeferredMessageUpdate).ConfigureAwait(false);
+
+                                Item item = player.GetItem(menuResponse.Result.Interaction.Data.Values[0].Split("_")[1]);
+                                player.EquipItem(item.ItemCategory, item);
+
+                                await menuResponse.Result.Interaction.DeleteFollowupMessageAsync(menuMsg.Id).ConfigureAwait(false);
+                                embed.ClearFields();
+                                player.AddEquippedEmbed(embed);
+                                player.AddItemEmbed(embed);
+
+                                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                                    .AddEmbed(embed)
+                                    .AddComponents(DiscordComponentHelper.EquipmentButtonComponents_1)
+                                    .AddComponents(DiscordComponentHelper.EquipmentButtonComponents_2))
+                                    .ConfigureAwait(false);
+
+                                
+                            }),
+                            Task.Delay(TimeSpan.FromMinutes(2)).ContinueWith(async x =>
+                            {
+                                await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed)).ConfigureAwait(false);
+                                await ctx.DeleteFollowupAsync(menuMsg.Id).ConfigureAwait(false);
+                                return Task.CompletedTask;
+                            }));
+
+                        if (btnResponse.Result.Interaction.Data.CustomId != "Close")
+                            btnResponse = await invMsg.WaitForButtonAsync(ctx.User, TimeSpan.FromMinutes(3)).ConfigureAwait(false);
+                    }
+
+                    
                 }
+
+                embed.ClearFields();
+                player.AddEquippedEmbed(embed);
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
