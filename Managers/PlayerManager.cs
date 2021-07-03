@@ -36,6 +36,7 @@ namespace Yuzuri.Managers
             player.EquipItem(Player.EquippedSlots.Legs, ItemManager.GetItem("Leather Pants"));
             player.EquipItem(Player.EquippedSlots.Shoes, ItemManager.GetItem("Leather Boots"));
             player.EquipItem(Player.EquippedSlots.Ring, ItemManager.GetItem("Copper Ring"));
+            player.EquipItem(Player.EquippedSlots.MainHand, ItemManager.GetItem("Copper Sword"));
 
             return player;
         }
@@ -91,5 +92,7 @@ namespace Yuzuri.Managers
         {
             return PlayerRoleCheck(guild, member, out _);
         }
+
+        
     }
 }

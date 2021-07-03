@@ -45,11 +45,11 @@ namespace Yuzuri
 
             Config = RegisterConfig().Result;
 
-            Console.WriteLine("Loading Assets...");
+            //Console.WriteLine("Loading Assets...");
             //PlayerManager = new PlayerManager();
             //GuildManager = new GuildManager();
             //ItemManager = new ItemManager();
-            Console.WriteLine("Assets Loaded!");
+            //Console.WriteLine("Assets Loaded!");
 
             try
             {
@@ -117,7 +117,7 @@ namespace Yuzuri
 
             RegisterEvents();
 
-            Console.WriteLine($"Yuzuki now Online! Startup took {(DateTime.Now - dateTime).TotalSeconds} seconds");
+            Client.Logger.LogDebug($"Yuzuki now Online! Startup took {(DateTime.Now - dateTime).TotalSeconds} seconds");
 
             await Client.ConnectAsync().ConfigureAwait(false);
 
@@ -153,23 +153,23 @@ namespace Yuzuri
         private async Task GuildAvailable(DiscordClient sender, GuildCreateEventArgs e)
         {
             DateTime dateTime = DateTime.Now;
-            Console.WriteLine("Performing Guild check...");
+            Client.Logger.LogInformation("Performing Guild check...");
 
             await GuildManager.GuildCheck(e.Guild).ConfigureAwait(false);
 
-            Console.WriteLine($"Discord Requirements check took {(DateTime.Now - dateTime).TotalSeconds} seconds");
+            Client.Logger.LogDebug($"Discord Requirements check took {(DateTime.Now - dateTime).TotalSeconds} seconds");
         }
 
         private async Task OnClientReady(DiscordClient sender, ReadyEventArgs e)
         {
 
             await sender.UpdateStatusAsync(new DiscordActivity($"Starting up...", ActivityType.Playing));
-
+            /*
             for (int i = 0; i < 10; i++)
             {
                 await sender.UpdateStatusAsync(new DiscordActivity($"Starting up... {new string('⬛', i)}{new string('⬜', 10 - i)} {10 * i}%", ActivityType.Playing), UserStatus.Idle);
                 await Task.Delay(TimeSpan.FromSeconds(30)).ConfigureAwait(false);
-            }
+            }*/
 
             await sender.UpdateStatusAsync(new DiscordActivity($"Exploring floor {new Random().Next(101)}", ActivityType.Playing), UserStatus.Online).ConfigureAwait(false);
         }
@@ -177,7 +177,7 @@ namespace Yuzuri
         private void StartUpCheck()
         {
             Console.WriteLine("Performing Startup checks...");
-
+            
             Directory.CreateDirectory("data/");
             Directory.CreateDirectory("data/Players");
             Directory.CreateDirectory("data/Items");

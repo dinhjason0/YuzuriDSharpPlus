@@ -68,6 +68,7 @@ namespace Yuzuri.Helpers
             return emoji.ToUpper() switch
             {
                 "CLOSE" => DiscordEmoji.FromName(client, ":x:"),
+                "TICK" => DiscordEmoji.FromName(client, ":white_check_mark:"),
                 _ => DiscordEmoji.FromName(client, ":question:")
             };
         }
