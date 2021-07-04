@@ -1,5 +1,6 @@
 ﻿using DSharpPlus;
 using DSharpPlus.Entities;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -43,13 +44,13 @@ namespace Yuzuri.Managers
 
                 if (!File.Exists($"data/Guilds/{guild.Id}.json"))
                 {
-                    Console.WriteLine($"Checking {guild.Name} data... 404 NOT FOUND!");
+                    Bot.Client.Logger.LogWarning($"Checking {guild.Name} data... 404 NOT FOUND!");
                     yuzuGuild = new YuzuGuild(guild.Id);
                 }
                 else
                 {
-                    Console.WriteLine($"Checking {guild.Name} data... OK.");
-                    yuzuGuild = GuildManager.ReadGuildData(guild.Id);
+                    Bot.Client.Logger.LogInformation($"Checking {guild.Name} data... OK.");
+                    yuzuGuild = ReadGuildData(guild.Id);
                 }
 
                 // Check if already exists
@@ -72,14 +73,14 @@ namespace Yuzuri.Managers
                                 case "Player-Rooms":
                                     if (hasRoomCategory) break;
 
-                                    Console.WriteLine($"{guild.Name}'s Player-Rooms... Found!");
+                                    Bot.Client.Logger.LogInformation($"{guild.Name}'s Player-Rooms... Found!");
                                     hasRoomCategory = true;
                                     yuzuGuild.RoomId = channel.Value.Id;
                                     break;
                                 case "Floors":
                                     if (hasFloorsCategory) break;
 
-                                    Console.WriteLine($"{guild.Name}'s Floors... Found!");
+                                    Bot.Client.Logger.LogInformation($"{guild.Name}'s Floors... Found!");
                                     hasFloorsCategory = true;
                                     yuzuGuild.FloorId = channel.Value.Id;
                                     break;
@@ -88,7 +89,7 @@ namespace Yuzuri.Managers
                         }
                         else if (channel.Value.Name.Equals("resources", StringComparison.OrdinalIgnoreCase) && resourcesChannel == 0)
                         {
-                            Console.WriteLine($"{guild.Name}'s Resource channel... Found!");
+                            Bot.Client.Logger.LogInformation($"{guild.Name}'s Resource channel... Found!");
                             resourcesChannel = channel.Value.Id;
                             yuzuGuild.Resources.Add(resourcesChannel);
                         }
@@ -102,9 +103,9 @@ namespace Yuzuri.Managers
                         discordOverwrite[0] = new DiscordOverwriteBuilder(guild.EveryoneRole) { Denied = Permissions.AccessChannels };
 
 
-                        Console.WriteLine($"{guild.Name}'s Player-Rooms... 404 NOT FOUND!");
+                        Bot.Client.Logger.LogWarning($"{guild.Name}'s Player-Rooms... 404 NOT FOUND!");
                         var room = await guild.CreateChannelCategoryAsync("Player-Rooms", discordOverwrite).ConfigureAwait(false);
-                        Console.WriteLine($"Generating {guild.Name}'s Player-Rooms...");
+                        Bot.Client.Logger.LogInformation($"Generating {guild.Name}'s Player-Rooms...");
 
                         yuzuGuild.RoomId = room.Id;
                     }
@@ -113,16 +114,16 @@ namespace Yuzuri.Managers
                         DiscordOverwriteBuilder[] discordOverwrite = new DiscordOverwriteBuilder[1];
                         discordOverwrite[0] = new DiscordOverwriteBuilder(guild.EveryoneRole) { Denied = Permissions.AccessChannels };
 
-                        Console.WriteLine($"{guild.Name}'s Floors... 404 NOT FOUND!");
+                        Bot.Client.Logger.LogWarning($"{guild.Name}'s Floors... 404 NOT FOUND!");
                         var floor = await guild.CreateChannelCategoryAsync("Floors", discordOverwrite).ConfigureAwait(false);
-                        Console.WriteLine($"Generating {guild.Name}'s Floors...");
+                        Bot.Client.Logger.LogInformation($"Generating {guild.Name}'s Floors...");
 
                         yuzuGuild.FloorId = floor.Id;
                     }
                 }
                 else
                 {
-                    Console.WriteLine($"{guild.Name}'s Categories... OK.");
+                    Bot.Client.Logger.LogInformation($"{guild.Name}'s Categories... OK.");
                 }
 
                 // Check if already exists
@@ -136,7 +137,7 @@ namespace Yuzuri.Managers
 
                         if (roles.Value.Name == "Player")
                         {
-                            Console.WriteLine($"{guild.Name}'s Player Role... Found!");
+                            Bot.Client.Logger.LogInformation($"{guild.Name}'s Player Role... Found!");
                             hasPlayerRole = true;
                             yuzuGuild.RoleId = roles.Value.Id;
                             break;
@@ -146,9 +147,9 @@ namespace Yuzuri.Managers
                     // Add new role
                     if (!hasPlayerRole)
                     {
-                        Console.WriteLine($"{guild.Name}'s Player Role... 404 NOT FOUND!");
+                        Bot.Client.Logger.LogWarning($"{guild.Name}'s Player Role... 404 NOT FOUND!");
                         var role = await guild.CreateRoleAsync("Player").ConfigureAwait(false);
-                        Console.WriteLine($"Generating {guild.Name}'s Player Role...");
+                        Bot.Client.Logger.LogInformation($"Generating {guild.Name}'s Player Role...");
 
                         yuzuGuild.RoleId = role.Id;
 
@@ -158,7 +159,7 @@ namespace Yuzuri.Managers
                 else
                 {
 
-                    Console.WriteLine($"{guild.Name}'s Roles... OK.");
+                    Bot.Client.Logger.LogInformation($"{guild.Name}'s Roles... OK.");
 
                     // Download files from resouces channel
                     try
@@ -167,7 +168,7 @@ namespace Yuzuri.Managers
                         {
                             DiscordChannel resources = await Bot.Client.GetChannelAsync(resourcesChannel).ConfigureAwait(false);
 
-                            Console.WriteLine($"Checking Resources... Found! Extracting data");
+                            Bot.Client.Logger.LogInformation($"Checking Resources... Found! Extracting data");
 
                             foreach (DiscordMessage msg in await resources.GetMessagesAsync().ConfigureAwait(false))
                             {
@@ -196,20 +197,20 @@ namespace Yuzuri.Managers
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Checking Resources... 404 NOT FOUND! Skipping...");
+                        Bot.Client.Logger.LogWarning($"Checking Resources... 404 NOT FOUND! Skipping...");
                         Console.WriteLine(ex);
                     }
 
                 }
 
-                Console.WriteLine($"Generating {guild.Name} data... Done.");
+                Bot.Client.Logger.LogInformation($"Generating {guild.Name} data... Done.");
                 WriteGuildData(yuzuGuild);
 
 
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Guild List could not be retrieved");
+                Bot.Client.Logger.LogWarning("Guild List could not be retrieved");
                 Console.WriteLine(ex);
             }
         }

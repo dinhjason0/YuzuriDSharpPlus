@@ -3,6 +3,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,6 +30,7 @@ namespace Yuzuri.Commands
         {
             try
             {
+                // If player is already a player
                 DiscordMember member = (DiscordMember)ctx.User;
                 if (!PlayerManager.PlayerRoleCheck(ctx.Guild, member, out DiscordRole playerRole))
                 {
@@ -40,7 +42,6 @@ namespace Yuzuri.Commands
                         Description = "New arrivals, please head towards the registry table."
                     };
 
-                    //var msg = await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
                     await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.ChannelMessageWithSource, 
                         new DiscordInteractionResponseBuilder().AddEmbed(embed.Build())).ConfigureAwait(false);
 
@@ -80,6 +81,7 @@ namespace Yuzuri.Commands
                         await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed.Build())).ConfigureAwait(false);
                         await Task.Delay(600);
 
+                        // Loading bar
                         int count = 0;
                         for (int i = 0; i < 3; i++)
                         {
@@ -95,10 +97,11 @@ namespace Yuzuri.Commands
                         embed.Description = $"Link connection has been established. Say hello to your new room {response.Result.Content}";
                         await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed.Build())).ConfigureAwait(false);
 
+                        // Assign new player info
                         await member.GrantRoleAsync(playerRole).ConfigureAwait(false);
                         try
                         {
-                            Player player = new Player(ctx.User.Id, response.Result.Content);
+                            Player player = PlayerManager.NewPlayer(ctx.User.Id, response.Result.Content);
 
                             var room = await PlayerManager.CreatePlayerRoom(ctx.Guild, player).ConfigureAwait(false);
                             player.RoomId = room.Id;
@@ -127,14 +130,15 @@ namespace Yuzuri.Commands
             }
         }
 
-        [SlashCommand("stats", "View your stats"), RequireRoles(RoleCheckMode.Any, new string[] { "Player" })]
+        [SlashCommand("stats", "View your stats")]
         public async Task Stats(InteractionContext ctx)
         {
-            await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.ChannelMessageWithSource, 
-                new DiscordInteractionResponseBuilder().WithContent("Loading Player data...")).ConfigureAwait(false);
-
+            // If player is already a player
             if (PlayerManager.PlayerRoleCheck(ctx.Guild, (DiscordMember)ctx.User))
             {
+                await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.ChannelMessageWithSource,
+                    new DiscordInteractionResponseBuilder().WithContent("Loading Player data...")).ConfigureAwait(false);
+
                 Player player = PlayerManager.ReadPlayerData(ctx.User.Id);
 
                 string status = "";
@@ -171,30 +175,12 @@ namespace Yuzuri.Commands
                     $"{EmojiHelper.GetStatEmoji("MPE")} MPE: {player.MPE}\n" +
                     $"{EmojiHelper.GetStatEmoji("DHL")} DHL: {player.DHL}\n" +
                     $"{EmojiHelper.GetStatEmoji("HIT")} HIT: {player.HIT}", true);
-                try
-                {
-                    embed.AddField("**Equipped**",
-                        $"{EmojiHelper.GetItemEmoji(ItemCategory.Weapon)} Main Hand: {player.Equipped[Player.EquippedSlots.MainHand].Name}\n" +
-                        $"{EmojiHelper.GetItemEmoji(ItemCategory.Helmet)} Helmet: {player.Equipped[Player.EquippedSlots.Helmet].Name}\n" +
-                        $"{EmojiHelper.GetItemEmoji(ItemCategory.Chestplate)} Chest: {player.Equipped[Player.EquippedSlots.Chest].Name}\n" +
-                        $"{EmojiHelper.GetItemEmoji(ItemCategory.Arms)} Gloves: {player.Equipped[Player.EquippedSlots.Arms].Name}\n" +
-                        $"{EmojiHelper.GetItemEmoji(ItemCategory.Leggings)} Legs: {player.Equipped[Player.EquippedSlots.Legs].Name}\n" +
-                        $"{EmojiHelper.GetItemEmoji(ItemCategory.Shoes)} Feet: {player.Equipped[Player.EquippedSlots.Shoes].Name}\n" +
-                        $"{EmojiHelper.GetItemEmoji(ItemCategory.Ring)} Ring: {player.Equipped[Player.EquippedSlots.Ring].Name}\n",
-                        true);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex);
-                }
+
+                player.AddEquippedEmbed(embed);
+
                 embed.AddField("**Skills**", "Punch ", true);
 
-                for (int i = 0, x = 1; i < player.Inventory.Count; i += 10, x++)
-                {
-                    embed.AddField($"**Inventory - {x}**",
-                        $"{string.Join("\n", player.Inventory.GetRange(i, (i + 10 > player.Inventory.Count ? player.Inventory.Count - i : 10)).Select(i => $"{EmojiHelper.GetItemEmoji(i.ItemCategory)} {i.Name}"))}", true);
-
-                }
+                player.AddItemEmbed(embed);
 
                 embed.WithFooter($"Inventory Slots: {player.Inventory.Count}/100");
 
@@ -203,19 +189,20 @@ namespace Yuzuri.Commands
             }
             else
             {
-                await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.ChannelMessageWithSource, 
-                    new DiscordInteractionResponseBuilder().WithContent("You haven't started your adventure yet! Use the `start` command!")).ConfigureAwait(false);
+                await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
+                    .WithContent("You haven't started your adventure yet! Use the `start` command!")).ConfigureAwait(false);
             }
         }
 
         [SlashCommand("quit", "End your adventure"), RequireRoles(RoleCheckMode.Any, new string[] { "Player" })]
         public async Task Quit(InteractionContext ctx)
         {
+            await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.DeferredChannelMessageWithSource).ConfigureAwait(false);
             if (PlayerManager.PlayerRoleCheck(ctx.Guild, (DiscordMember)ctx.User, out DiscordRole discordRole))
             {
                 var interactivity = ctx.Client.GetInteractivity();
 
-                var msg = await ctx.Interaction.Channel.SendMessageAsync("Are you sure you want to end your adventure? React to the tick emoji to confirm.");
+                var msg = await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Are you sure you want to end your adventure? React to the tick emoji to confirm.")).ConfigureAwait(false);
                 await msg.CreateReactionAsync(DiscordEmoji.FromName(Bot.Client, ":white_check_mark:")).ConfigureAwait(false);
 
                 var reaction = await interactivity
@@ -242,108 +229,85 @@ namespace Yuzuri.Commands
             }
         }
 
-        [SlashCommand("inventory", "View your inventory"), Aliases(new string[] { "inv" }), RequireRoles(RoleCheckMode.Any, new string[] { "Player" })]
+        [SlashCommand("inventory", "View your inventory"), Aliases(new string[] { "inv" })]
         public async Task Inventory(InteractionContext ctx)
         {
-            Player player = PlayerManager.ReadPlayerData(ctx.User.Id);
-
-            var embed = new DiscordEmbedBuilder
+            // If player is already a player
+            if (PlayerManager.PlayerRoleCheck(ctx.Guild, (DiscordMember)ctx.User))
             {
-                Title = $"{player.Name}'s Inventory",
-                Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail()
+                Player player = PlayerManager.ReadPlayerData(ctx.User.Id);
+
+                var embed = new DiscordEmbedBuilder
                 {
-                    Url = ctx.User.AvatarUrl
-                },
-                Color = DiscordColor.Green,
-            };
-
-            for (int i = 0, x = 1; i < player.Inventory.Count; i += 10, x++)
-            {
-                embed.AddField($"**Inventory - {x}**",
-                    $"{string.Join("\n", player.Inventory.GetRange(i, (i + 10 > player.Inventory.Count ? player.Inventory.Count - i : 10)).Select(i => $"{EmojiHelper.GetItemEmoji(i.ItemCategory)} {i.Name}"))}", true);
-
-            }
-
-            embed.WithFooter($"Inventory Slots: {player.Inventory.Count}/100");
-
-            await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.ChannelMessageWithSource,
-                new DiscordInteractionResponseBuilder().WithContent("Loading inventory...")).ConfigureAwait(false);
-            try
-            {
-                var builder = new DiscordWebhookBuilder()
-                    .AddEmbed(embed.Build())
-                    .WithComponents(new DiscordComponent[]
+                    Title = $"{player.Name}'s Inventory",
+                    Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail()
                     {
-                    ButtonHelper.MainHand, ButtonHelper.Helmet, ButtonHelper.Chestplate,
-                    ButtonHelper.Arms, ButtonHelper.Leggings
-                    })
-                    .WithComponents(new DiscordComponent[]
-                    {
-                    ButtonHelper.Shoes, ButtonHelper.Ring, ButtonHelper.Consumable,
-                    ButtonHelper.None, ButtonHelper.RedClose
-                    });
+                        Url = ctx.User.AvatarUrl
+                    },
+                    Color = DiscordColor.Green,
+                };
 
-                //var msg = await builder.SendAsync(ctx.Channel).ConfigureAwait(false);
-                var msg = await ctx.EditResponseAsync(builder).ConfigureAwait(false);
+                player.AddItemEmbed(embed);
 
-                var result = await msg.WaitForButtonAsync(ctx.User, TimeSpan.FromMinutes(2)).ConfigureAwait(false);
-           
-                //var result = await interactivity.WaitForButtonAsync(msg, TimeSpan.FromMinutes(2));
+                embed.WithFooter($"Inventory Slots: {player.Inventory.Count}/100");
 
-                while (!result.TimedOut && result.Result.Interaction.Data.CustomId != "Close")
+                await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.ChannelMessageWithSource,
+                    new DiscordInteractionResponseBuilder().WithContent("Loading inventory...")).ConfigureAwait(false);
+                try
                 {
-                    await result.Result.Interaction.CreateResponseAsync(DSharpPlus.InteractionResponseType.DefferedMessageUpdate).ConfigureAwait(false);
+                    var builder = new DiscordWebhookBuilder()
+                        .AddEmbed(embed.Build())
+                        .AddComponents(DiscordComponentHelper.EquipmentButtonComponents_1)
+                        .AddComponents(DiscordComponentHelper.EquipmentButtonComponents_2);
 
-                    embed.ClearFields();
+                    //var msg = await builder.SendAsync(ctx.Channel).ConfigureAwait(false);
+                    var msg = await ctx.EditResponseAsync(builder).ConfigureAwait(false);
 
-                    string title = "";
-                    List<Item> items = new List<Item>();
+                    var result = await msg.WaitForButtonAsync(ctx.User, TimeSpan.FromMinutes(2)).ConfigureAwait(false);
 
-                    if (result.Result.Interaction.Data.CustomId.Equals("None"))
+                    // Loop waiting for next inputs 
+                    while (!result.TimedOut && !result.Result.Interaction.Data.CustomId.Equals("Close"))
                     {
-                        title = "Inventory";
-                        items = player.Inventory;
+                        await result.Result.Interaction.CreateResponseAsync(DSharpPlus.InteractionResponseType.DeferredMessageUpdate).ConfigureAwait(false);
+
+                        embed.ClearFields();
+
+                        string title = "";
+                        List<Item> items = new List<Item>();
+
+                        // Get specific items based on category
+                        if (result.Result.Interaction.Data.CustomId.Equals("None"))
+                        {
+                            title = "Inventory";
+                            player.AddItemEmbed(embed);
+                        }
+                        else
+                        {
+                            title = result.Result.Interaction.Data.CustomId;
+                            player.AddItemEmbed(embed, Enum.Parse<ItemCategory>(result.Result.Interaction.Data.CustomId));
+                        }
+
+                        builder.Clear();
+                        builder.AddEmbed(embed.Build());
+
+                        await ctx.EditResponseAsync(builder).ConfigureAwait(false);
+
+                        // Wait for next button input to continue looping
+                        result = await msg.WaitForButtonAsync(ctx.User, TimeSpan.FromMinutes(2)).ConfigureAwait(false);
                     }
-                    else
-                    {
-                        title = result.Result.Interaction.Data.CustomId;
-                        items = player.GetItems(Enum.Parse<ItemCategory>(result.Result.Interaction.Data.CustomId));
-                    }
 
-                    
-
-                    for (int i = 0, x = 1; i < items.Count; i += 10, x++)
-                    {
-                        embed.AddField($"**{title} - {x}**",
-                            $"{string.Join("\n", items.GetRange(i, (i + 10 > items.Count ? items.Count - i : 10)).Select(i => $"{EmojiHelper.GetItemEmoji(i.ItemCategory)} {i.Name}"))}", true);
-
-                    }
-
-                    builder = new DiscordWebhookBuilder()
-                    .AddEmbed(embed.Build())
-                    .WithComponents(new DiscordComponent[]
-                    {
-                    ButtonHelper.MainHand, ButtonHelper.Helmet, ButtonHelper.Chestplate,
-                    ButtonHelper.Arms, ButtonHelper.Leggings
-                    })
-                    .WithComponents(new DiscordComponent[]
-                    {
-                    ButtonHelper.Shoes, ButtonHelper.Ring, ButtonHelper.Consumable,
-                    ButtonHelper.None, ButtonHelper.RedClose,
-                    });
-
-                    await ctx.EditResponseAsync(builder).ConfigureAwait(false);
-                    
-
-                    result = await msg.WaitForButtonAsync(ctx.User, TimeSpan.FromMinutes(2)).ConfigureAwait(false);
-                    
+                    // Update to remove buttons
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed)).ConfigureAwait(false);
                 }
-
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed)).ConfigureAwait(false);
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
             }
-            catch (Exception ex)
+            else
             {
-                Console.WriteLine(ex);
+                await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
+                    .WithContent("You haven't started your adventure yet! Use the `start` command!")).ConfigureAwait(false);
             }
         }
 
@@ -377,6 +341,189 @@ namespace Yuzuri.Commands
                 Console.WriteLine(ex);
             }
 
+        }
+
+        [SlashCommand("battletest", "Battle Input tests")]
+        public async Task BattleTest(InteractionContext ctx)
+        {
+            try {
+                await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.DeferredChannelMessageWithSource).ConfigureAwait(false);
+
+                DiscordWebhookBuilder builder = new DiscordWebhookBuilder()
+                .WithContent("Combat test, give button inputs")
+                    .AddComponents(DiscordComponentHelper.EquipmentButtonComponents_1)
+                    .AddComponents(DiscordComponentHelper.EquipmentButtonComponents_2);
+
+
+                var timeout = DateTime.Now + TimeSpan.FromMinutes(2);
+
+                Dictionary<ulong, string> action = new Dictionary<ulong, string>();
+
+                // TODO: PlayerManager to handle the getting input loop
+                // TODO: Proper prototype multiple turn loops
+                while (DateTime.Now < timeout)
+                {
+                    var msg = await ctx.EditResponseAsync(builder).ConfigureAwait(false);
+
+                    var result = await msg.WaitForButtonAsync(TimeSpan.FromMinutes(2)).ConfigureAwait(false);
+
+                    if (!result.TimedOut)
+                    {
+                        await result.Result.Interaction.CreateResponseAsync(DSharpPlus.InteractionResponseType.DeferredMessageUpdate).ConfigureAwait(false);
+
+                        action[result.Result.Interaction.User.Id] = result.Result.Interaction.Data.CustomId;
+                    }
+                }
+
+                await ctx.Channel.SendMessageAsync(string.Join(", ", action.Select(x => $"{x.Key}: {x.Value}")));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+        }
+
+        [SlashCommand("equipment", "Equip specific types of gear")]
+        public async Task Equipment(InteractionContext ctx)
+        {
+            // If player is already a player
+            if (PlayerManager.PlayerRoleCheck(ctx.Guild, (DiscordMember)ctx.User))
+            {
+                try
+                {
+                    await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.DeferredChannelMessageWithSource).ConfigureAwait(false);
+
+                    Player player = PlayerManager.ReadPlayerData(ctx.User.Id);
+
+                    var embed = new DiscordEmbedBuilder
+                    {
+                        Title = $"{player.Name}'s Inventory",
+                        Description = "Click the button to equip the type of gear",
+                        Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail()
+                        {
+                            Url = ctx.User.AvatarUrl
+                        },
+                        Color = DiscordColor.Green,
+                    };
+
+                    player.AddEquippedEmbed(embed, false);
+                    player.AddEquippableItemEmbed(embed);
+
+                    var builder = new DiscordWebhookBuilder()
+                        .AddEmbed(embed.Build())
+                        .AddComponents(DiscordComponentHelper.EquipmentButtonComponents_1)
+                        .AddComponents(DiscordComponentHelper.EquipmentButtonComponents_3);
+
+                    var invMsg = await ctx.EditResponseAsync(builder).ConfigureAwait(false);
+
+                    var btnResponse = await invMsg.WaitForButtonAsync(ctx.User, TimeSpan.FromMinutes(2)).ConfigureAwait(false);
+
+                    // Loop waiting for next inputs 
+                    while (!btnResponse.TimedOut && !btnResponse.Result.Interaction.Data.CustomId.Equals("Close"))
+                    {
+                        await btnResponse.Result.Interaction.CreateResponseAsync(DSharpPlus.InteractionResponseType.DeferredMessageUpdate).ConfigureAwait(false);
+
+                        embed.ClearFields();
+                        player.AddEquippedEmbed(embed, false);
+
+                        string title = "";
+
+                        // Get specific items based on category
+                        if (btnResponse.Result.Interaction.Data.CustomId.Equals("None"))
+                        {
+                            title = "Inventory";
+                            player.AddEquippableItemEmbed(embed);
+                        }
+                        else
+                        {
+                            title = btnResponse.Result.Interaction.Data.CustomId;
+                            player.AddItemEmbed(embed, Enum.Parse<ItemCategory>(btnResponse.Result.Interaction.Data.CustomId));
+                        }
+
+
+                        builder = new DiscordWebhookBuilder()
+                            .AddEmbed(embed.Build())
+                            .AddComponents(DiscordComponentHelper.EquipmentButtonComponents_1)
+                            .AddComponents(DiscordComponentHelper.EquipmentButtonComponents_3);
+
+                        await ctx.EditResponseAsync(builder).ConfigureAwait(false);
+
+                        List<Item> items = player.GetItems(Enum.Parse<ItemCategory>(btnResponse.Result.Interaction.Data.CustomId));
+                        var menuResponse = btnResponse;
+
+                        if (items.Count > 0)
+                        {
+                            var selectMenu = new DiscordFollowupMessageBuilder()
+                                .WithContent("Select the equipment from the select menu you wish to equip")
+                                .AddComponents(new DiscordSelectComponent("equipment", title,
+                                    DiscordComponentHelper.EquipmentMenuSelectOption(items)));
+
+                            var menuMsg = await btnResponse.Result.Interaction.CreateFollowupMessageAsync(selectMenu).ConfigureAwait(false);
+
+                            // Wait for TimeOut (2min), Buttons or Select Menu
+                            await Task.WhenAny(
+                                Task.Delay(TimeSpan.FromMinutes(2)).ContinueWith(async x =>
+                                {
+                                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed)).ConfigureAwait(false);
+                                    await ctx.DeleteFollowupAsync(menuMsg.Id).ConfigureAwait(false);
+                                    return Task.CompletedTask;
+                                }),
+                                invMsg.WaitForButtonAsync(ctx.User, TimeSpan.FromMinutes(3)).ContinueWith(async x =>
+                                {
+                                //if (timedout) return;
+                                btnResponse = x.Result;
+
+                                    await btnResponse.Result.Interaction.CreateResponseAsync(DSharpPlus.InteractionResponseType.DeferredMessageUpdate).ConfigureAwait(false);
+
+                                    await menuResponse.Result.Interaction.DeleteFollowupMessageAsync(menuMsg.Id).ConfigureAwait(false);
+
+
+                                }),
+                                menuMsg.WaitForSelectAsync(ctx.User, "equipment", TimeSpan.FromMinutes(3)).ContinueWith(async x =>
+                                {
+                                //if (timedout) return;
+                                menuResponse = x.Result;
+                                    await menuResponse.Result.Interaction.CreateResponseAsync(DSharpPlus.InteractionResponseType.DeferredMessageUpdate).ConfigureAwait(false);
+
+                                    Item item = player.GetItem(menuResponse.Result.Interaction.Data.Values[0].Split("_")[1]);
+                                    player.EquipItem(item.ItemCategory, item);
+
+                                    await menuResponse.Result.Interaction.DeleteFollowupMessageAsync(menuMsg.Id).ConfigureAwait(false);
+                                    embed.ClearFields();
+                                    player.AddEquippedEmbed(embed);
+                                    player.AddItemEmbed(embed, false);
+
+                                    await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                                        .AddEmbed(embed)
+                                        .AddComponents(DiscordComponentHelper.EquipmentButtonComponents_1)
+                                        .AddComponents(DiscordComponentHelper.EquipmentButtonComponents_2))
+                                        .ConfigureAwait(false);
+
+
+                                })
+                                );
+                        }
+
+                        // If user didn't hit close, check what the next button is
+                        if (!btnResponse.Result.Interaction.Data.CustomId.Equals("Close"))
+                            btnResponse = await invMsg.WaitForButtonAsync(ctx.User, TimeSpan.FromMinutes(3)).ConfigureAwait(false);
+                    }
+
+                    // Update to remove buttons
+                    embed.ClearFields();
+                    player.AddEquippedEmbed(embed);
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed)).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+            }
+            else
+            {
+                await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
+                    .WithContent("You haven't started your adventure yet! Use the `start` command!")).ConfigureAwait(false);
+            }
         }
     }
 }
