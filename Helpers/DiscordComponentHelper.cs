@@ -29,9 +29,9 @@ namespace Yuzuri.Helpers
         /// </summary>
         public static readonly DiscordComponent[] EquipmentButtonComponents_2 = new DiscordComponent[] { Shoes, Ring, Consumable, None, RedClose };
         /// <summary>
-        /// Shoes, Ring, Consumable
+        /// Shoes, Ring, RedClose
         /// </summary>
-        public static readonly DiscordComponent[] EquipmentButtonComponents_3 = new DiscordComponent[] { Shoes, Ring, Consumable};
+        public static readonly DiscordComponent[] EquipmentButtonComponents_3 = new DiscordComponent[] { Shoes, Ring, RedClose };
 
         public static DiscordSelectComponentOption[] EquipmentMenuSelectOption(List<Item> items)
         {

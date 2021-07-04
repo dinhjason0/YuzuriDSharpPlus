@@ -3,6 +3,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -395,18 +396,18 @@ namespace Yuzuri.Commands
                 };
 
                 player.AddEquippedEmbed(embed, false);
-                player.AddItemEmbed(embed);
+                player.AddEquippableItemEmbed(embed);
 
                 var builder = new DiscordWebhookBuilder()
                     .AddEmbed(embed.Build())
                     .AddComponents(DiscordComponentHelper.EquipmentButtonComponents_1)
-                    .AddComponents(DiscordComponentHelper.EquipmentButtonComponents_2);
+                    .AddComponents(DiscordComponentHelper.EquipmentButtonComponents_3);
 
                 var invMsg = await ctx.EditResponseAsync(builder).ConfigureAwait(false);
 
                 var btnResponse = await invMsg.WaitForButtonAsync(ctx.User, TimeSpan.FromMinutes(2)).ConfigureAwait(false);
 
-                while (!btnResponse.TimedOut && btnResponse.Result.Interaction.Data.CustomId != "Close")
+                while (!btnResponse.TimedOut && !btnResponse.Result.Interaction.Data.CustomId.Equals("Close"))
                 {
                     await btnResponse.Result.Interaction.CreateResponseAsync(DSharpPlus.InteractionResponseType.DeferredMessageUpdate).ConfigureAwait(false);
 
@@ -452,10 +453,12 @@ namespace Yuzuri.Commands
                                 btnResponse = x.Result;
 
                                 await btnResponse.Result.Interaction.CreateResponseAsync(DSharpPlus.InteractionResponseType.DeferredMessageUpdate).ConfigureAwait(false);
+
                                 await menuResponse.Result.Interaction.DeleteFollowupMessageAsync(menuMsg.Id).ConfigureAwait(false);
 
+
                             }),
-                            menuMsg.WaitForSelectAsync("equipment", TimeSpan.FromMinutes(3)).ContinueWith(async x =>
+                            menuMsg.WaitForSelectAsync(ctx.User, "equipment", TimeSpan.FromMinutes(3)).ContinueWith(async x =>
                             {
                                 menuResponse = x.Result;
                                 await menuResponse.Result.Interaction.CreateResponseAsync(DSharpPlus.InteractionResponseType.DeferredMessageUpdate).ConfigureAwait(false);
@@ -466,7 +469,7 @@ namespace Yuzuri.Commands
                                 await menuResponse.Result.Interaction.DeleteFollowupMessageAsync(menuMsg.Id).ConfigureAwait(false);
                                 embed.ClearFields();
                                 player.AddEquippedEmbed(embed);
-                                player.AddItemEmbed(embed);
+                                player.AddItemEmbed(embed, false);
 
                                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                                     .AddEmbed(embed)
@@ -482,12 +485,10 @@ namespace Yuzuri.Commands
                                 await ctx.DeleteFollowupAsync(menuMsg.Id).ConfigureAwait(false);
                                 return Task.CompletedTask;
                             }));
-
-                        if (btnResponse.Result.Interaction.Data.CustomId != "Close")
-                            btnResponse = await invMsg.WaitForButtonAsync(ctx.User, TimeSpan.FromMinutes(3)).ConfigureAwait(false);
                     }
 
-                    
+                    if (!btnResponse.Result.Interaction.Data.CustomId.Equals("Close"))
+                        btnResponse = await invMsg.WaitForButtonAsync(ctx.User, TimeSpan.FromMinutes(3)).ConfigureAwait(false);
                 }
 
                 embed.ClearFields();

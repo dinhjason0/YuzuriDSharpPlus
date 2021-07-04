@@ -242,6 +242,23 @@ namespace Yuzuri.Commons
         }
 
         /// <summary>
+        /// Adds fields with players equippable inventory content
+        /// </summary>
+        /// <param name="embed">Embed for fields to be added</param>
+        /// <param name="inline">Should embed be inline?</param>
+        public void AddEquippableItemEmbed(DiscordEmbedBuilder embed, bool inline = true)
+        {
+            ItemCategory[] itemCategories = new ItemCategory[6] { ItemCategory.Weapon, ItemCategory.Helmet, ItemCategory.Chestplate, ItemCategory.Arms, ItemCategory.Leggings, ItemCategory.Shoes};
+            List<Item> items = Inventory.FindAll(i => itemCategories.Contains(i.ItemCategory));
+
+            for (int i = 0, x = 1; i < items.Count; i += 10, x++)
+            {
+                embed.AddField($"**Inventory - {x}**",
+                    $"{string.Join("\n", items.GetRange(i, (i + 10 > items.Count ? items.Count - i : 10)).Select(i => $"{EmojiHelper.GetItemEmoji(i.ItemCategory)} {i.Name}"))}", inline);
+            }
+        }
+
+        /// <summary>
         /// Adds fields with players inventory content based on item category
         /// </summary>
         /// <param name="embed">Embed for fields to be added</param>
@@ -253,7 +270,7 @@ namespace Yuzuri.Commons
 
             for (int i = 0, x = 1; i < items.Count; i += 10, x++)
             {
-                embed.AddField($"**Inventory - {x}**",
+                embed.AddField($"**{category} - {x}**",
                     $"{string.Join("\n", items.GetRange(i, (i + 10 > items.Count ? items.Count - i : 10)).Select(i => $"{EmojiHelper.GetItemEmoji(i.ItemCategory)} {i.Name}"))}", inline);
             }
         }
