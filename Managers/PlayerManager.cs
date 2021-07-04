@@ -23,6 +23,12 @@ namespace Yuzuri.Managers
             ItemManager = provider.GetRequiredService<ItemManager>();
         }
 
+        /// <summary>
+        /// Creates a new player object
+        /// </summary>
+        /// <param name="id">Snowflake Id of user</param>
+        /// <param name="name">User's adventure name</param>
+        /// <returns></returns>
         public Player NewPlayer(ulong id, string name)
         {
             Player player = new Player(id, name);
@@ -41,6 +47,10 @@ namespace Yuzuri.Managers
             return player;
         }
 
+        /// <summary>
+        /// Saves player data
+        /// </summary>
+        /// <param name="player">Player data to save</param>
         public static void WritePlayerData(Player player)
         {
             using StreamWriter w = File.CreateText($"data/Players/{player.UserId}.json");
@@ -49,6 +59,11 @@ namespace Yuzuri.Managers
             w.Close();
         }
 
+        /// <summary>
+        /// Load a players data
+        /// </summary>
+        /// <param name="id">Snowflake id of players data to load</param>
+        /// <returns></returns>
         public Player ReadPlayerData(ulong id)
         {
             using StreamReader r = new StreamReader($"data/Players/{id}.json");
@@ -58,6 +73,12 @@ namespace Yuzuri.Managers
             return player;
         }
 
+        /// <summary>
+        /// Creates player's personal room
+        /// </summary>
+        /// <param name="guild">Guild for the room to be made in</param>
+        /// <param name="player">Player for the room to be made for</param>
+        /// <returns></returns>
         public async Task<DiscordChannel> CreatePlayerRoom(DiscordGuild guild, Player player)
         {
 
@@ -69,6 +90,12 @@ namespace Yuzuri.Managers
             return await guild.CreateTextChannelAsync($"{player.Name}s Room", guild.GetChannel(yuzuGuild.RoomId), $"{player.Name}'s Room", discordOverwrite);
         }
 
+        /// <summary>
+        /// Remove a players room
+        /// </summary>
+        /// <param name="guild">Guild for the room to be removed from</param>
+        /// <param name="player">Player for the players room to be removed</param>
+        /// <returns></returns>
         public async Task RemovePlayerRoom(DiscordGuild guild, Player player)
         {
             try
@@ -80,6 +107,13 @@ namespace Yuzuri.Managers
             
         }
 
+        /// <summary>
+        /// Check if the user has the player role. Returns playerrole if they do
+        /// </summary>
+        /// <param name="guild">Guild for the player role check</param>
+        /// <param name="member">Member to check player role</param>
+        /// <param name="playerRole">Returns player role if found</param>
+        /// <returns>Returns true if the player has the guilds player role</returns>
         public static bool PlayerRoleCheck(DiscordGuild guild, DiscordMember member, out DiscordRole playerRole)
         {
             YuzuGuild yuzuGuild = GuildManager.ReadGuildData(guild.Id);
@@ -88,6 +122,12 @@ namespace Yuzuri.Managers
             return member.Roles.Contains(playerRole);
         }
 
+        /// <summary>
+        /// Check if the user has the player role
+        /// </summary>
+        /// <param name="guild">Guild for the player role check</param>
+        /// <param name="member">Member to check player role</param>
+        /// <returns>Returns true if the player has the guilds player role</returns>
         public static bool PlayerRoleCheck(DiscordGuild guild, DiscordMember member)
         {
             return PlayerRoleCheck(guild, member, out _);

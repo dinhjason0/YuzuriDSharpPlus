@@ -9,6 +9,11 @@ namespace Yuzuri.Helpers
 {
     public class EmojiHelper
     {
+        /// <summary>
+        /// Get DiscordEmoji for ItemCategories
+        /// </summary>
+        /// <param name="category">ItemCategory of emoji</param>
+        /// <returns>DiscordEmoji of the ItemCategory. Returns ? if invalid</returns>
         public static DiscordEmoji GetItemEmoji(ItemCategory category)
         {
             DiscordClient client = Bot.Client;
@@ -27,6 +32,11 @@ namespace Yuzuri.Helpers
             };
         }
 
+        /// <summary>
+        /// Get DiscordEmohi for Stats
+        /// </summary>
+        /// <param name="stat">Stat of emoji</param>
+        /// <returns>DiscordEmoji of Stat. Returns ? if invalid</returns>
         public static DiscordEmoji GetStatEmoji(string stat)
         {
             DiscordClient client = Bot.Client;
@@ -45,6 +55,11 @@ namespace Yuzuri.Helpers
             };
         }
 
+        /// <summary>
+        /// Get DiscordEmoji of Item Stats
+        /// </summary>
+        /// <param name="stat">Stat of Item emoji</param>
+        /// <returns>DiscordEmoji of item stat. Returns ? if invalid</returns>
         public static DiscordEmoji GetItemEmoji(string stat)
         {
             DiscordClient client = Bot.Client;
@@ -62,6 +77,11 @@ namespace Yuzuri.Helpers
             };
         }
 
+        /// <summary>
+        /// DiscordEmoji that doesn't belong to a main category
+        /// </summary>
+        /// <param name="emoji"></param>
+        /// <returns></returns>
         public static DiscordEmoji GetMiscEmoji(string emoji)
         {
             DiscordClient client = Bot.Client;
