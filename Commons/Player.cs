@@ -275,6 +275,18 @@ namespace Yuzuri.Commons
             }
         }
 
+        public void AddStatEmbed(DiscordEmbedBuilder embed)
+        {
+            embed.AddField("\n**Stats**\n",
+                    $"{EmojiHelper.GetStatEmoji("HP")} HP: {HP}\n" +
+                    $"{EmojiHelper.GetStatEmoji("STR")} STR: {STR}\n" +
+                    $"{EmojiHelper.GetStatEmoji("DEX")} DEX: {DEX}\n" +
+                    $"{EmojiHelper.GetStatEmoji("SPD")} SPD: {SPD}\n" +
+                    $"{EmojiHelper.GetStatEmoji("MPE")} MPE: {MPE}\n" +
+                    $"{EmojiHelper.GetStatEmoji("DHL")} DHL: {DHL}\n" +
+                    $"{EmojiHelper.GetStatEmoji("HIT")} HIT: {HIT}", true);
+        }
+
         public enum EquippedSlots
         {
             Helmet = 0,

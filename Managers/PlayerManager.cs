@@ -64,7 +64,7 @@ namespace Yuzuri.Managers
         /// </summary>
         /// <param name="id">Snowflake id of players data to load</param>
         /// <returns></returns>
-        public Player ReadPlayerData(ulong id)
+        public static Player ReadPlayerData(ulong id)
         {
             using StreamReader r = new StreamReader($"data/Players/{id}.json");
             string json = r.ReadToEnd();
@@ -79,7 +79,7 @@ namespace Yuzuri.Managers
         /// <param name="guild">Guild for the room to be made in</param>
         /// <param name="player">Player for the room to be made for</param>
         /// <returns></returns>
-        public async Task<DiscordChannel> CreatePlayerRoom(DiscordGuild guild, Player player)
+        public static async Task<DiscordChannel> CreatePlayerRoom(DiscordGuild guild, Player player)
         {
 
             YuzuGuild yuzuGuild = GuildManager.ReadGuildData(guild.Id);
@@ -96,7 +96,7 @@ namespace Yuzuri.Managers
         /// <param name="guild">Guild for the room to be removed from</param>
         /// <param name="player">Player for the players room to be removed</param>
         /// <returns></returns>
-        public async Task RemovePlayerRoom(DiscordGuild guild, Player player)
+        public static async Task RemovePlayerRoom(DiscordGuild guild, Player player)
         {
             try
             {
@@ -131,8 +131,6 @@ namespace Yuzuri.Managers
         public static bool PlayerRoleCheck(DiscordGuild guild, DiscordMember member)
         {
             return PlayerRoleCheck(guild, member, out _);
-        }
-
-        
+        }        
     }
 }

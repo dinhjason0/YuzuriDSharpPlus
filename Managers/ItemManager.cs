@@ -28,10 +28,8 @@ namespace Yuzuri.Managers
                 if (string.Equals(item.Name, name, StringComparison.OrdinalIgnoreCase))
                 {
                     if (item.ItemEffects.FindAll(i => i == ItemEffect.None).Count > 1)
-                    {
                         item.ItemEffects.RemoveAll(i => i == ItemEffect.None);
-                        item.ItemEffects.Add(ItemEffect.None);
-                    }
+                    
                     return item;
                 }
             }
@@ -78,4 +76,10 @@ namespace Yuzuri.Managers
                 File.Delete($"data/Items/{originalName.Replace(" ", "")}.json");
         }
     }
+
+    public enum ItemData
+    {
+        None = -1
+    }
+
 }

@@ -77,6 +77,19 @@ namespace Yuzuri.Helpers
             };
         }
 
+        public static DiscordEmoji GetCombatEmoji(string emoji)
+        {
+            DiscordClient client = Bot.Client;
+
+            return emoji.ToUpper() switch
+            {
+                "SHIELD" => DiscordEmoji.FromName(client, ":shield:"),
+                "DODGE" => DiscordEmoji.FromName(client, ":cyclone:"),
+                "" => DiscordEmoji.FromName(client, ":person_fencing:"),
+                _ => DiscordEmoji.FromName(client, ":question:")
+            };
+        }
+
         /// <summary>
         /// DiscordEmoji that doesn't belong to a main category
         /// </summary>

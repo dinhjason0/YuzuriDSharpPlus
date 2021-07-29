@@ -167,14 +167,7 @@ namespace Yuzuri.Commands
                     Color = DiscordColor.Green,
                 };
 
-                embed.AddField("\n**Stats**\n",
-                    $"{EmojiHelper.GetStatEmoji("HP")} HP: {player.HP}\n" +
-                    $"{EmojiHelper.GetStatEmoji("STR")} STR: {player.STR}\n" +
-                    $"{EmojiHelper.GetStatEmoji("DEX")} DEX: {player.DEX}\n" +
-                    $"{EmojiHelper.GetStatEmoji("SPD")} SPD: {player.SPD}\n" +
-                    $"{EmojiHelper.GetStatEmoji("MPE")} MPE: {player.MPE}\n" +
-                    $"{EmojiHelper.GetStatEmoji("DHL")} DHL: {player.DHL}\n" +
-                    $"{EmojiHelper.GetStatEmoji("HIT")} HIT: {player.HIT}", true);
+                player.AddStatEmbed(embed);
 
                 player.AddEquippedEmbed(embed);
 
@@ -501,7 +494,7 @@ namespace Yuzuri.Commands
 
 
                                 })
-                                );
+                            );
                         }
 
                         // If user didn't hit close, check what the next button is
@@ -522,7 +515,35 @@ namespace Yuzuri.Commands
             else
             {
                 await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
-                    .WithContent("You haven't started your adventure yet! Use the `start` command!")).ConfigureAwait(false);
+                    .WithContent("You haven't started your adventure yet! Use the `/start` command!")).ConfigureAwait(false);
+            }
+        }
+
+        [SlashCommand("explore", "Explore the current floor for mobs")]
+        public async Task Explore(InteractionContext ctx)
+        {
+            if (PlayerManager.PlayerRoleCheck(ctx.Guild, ctx.Member))
+            {
+                if (GuildManager.FloorCheck(ctx.Channel))
+                {
+                    await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
+                        .WithContent("Used in a channel")).ConfigureAwait(false);
+
+
+                    await CombatManager.StartCombat(ctx);
+
+
+                }
+                else
+                {
+                    await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
+                        .WithContent("This command can only work in a floor channel!")).ConfigureAwait(false);
+                }
+            }
+            else
+            {
+                await ctx.CreateResponseAsync(DSharpPlus.InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
+                    .WithContent("You haven't started your adventure yet! Use the `/start` command!")).ConfigureAwait(false);
             }
         }
     }

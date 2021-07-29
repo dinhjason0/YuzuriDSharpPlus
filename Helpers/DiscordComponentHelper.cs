@@ -20,6 +20,21 @@ namespace Yuzuri.Helpers
         public static DiscordButtonComponent None => new DiscordButtonComponent(ButtonStyle.Secondary, "None", "None", false, new DiscordComponentEmoji(EmojiHelper.GetItemEmoji(ItemCategory.None)));
         public static DiscordButtonComponent RedClose => new DiscordButtonComponent(ButtonStyle.Danger, "Close", "Close", false, new DiscordComponentEmoji(EmojiHelper.GetMiscEmoji("Close")));
         public static DiscordButtonComponent GrayClose => new DiscordButtonComponent(ButtonStyle.Secondary, "Close", "Close", false, new DiscordComponentEmoji(EmojiHelper.GetMiscEmoji("Close")));
+
+        public static DiscordButtonComponent BlockStance => new DiscordButtonComponent(ButtonStyle.Secondary, "Block", "Block Stance ", false, new DiscordComponentEmoji(EmojiHelper.GetCombatEmoji("Shield")));
+        public static DiscordButtonComponent ParryStance => new DiscordButtonComponent(ButtonStyle.Secondary, "Parry", "Parry Stance", false, new DiscordComponentEmoji(EmojiHelper.GetCombatEmoji("Parry")));
+        public static DiscordButtonComponent DodgeStance => new DiscordButtonComponent(ButtonStyle.Secondary, "Dodge", "Dodge Stance", false, new DiscordComponentEmoji(EmojiHelper.GetCombatEmoji("Dodge")));
+        public static DiscordButtonComponent AttackStance => new DiscordButtonComponent(ButtonStyle.Secondary, "Attack", "Attack Stance", false, new DiscordComponentEmoji(EmojiHelper.GetItemEmoji(ItemCategory.Weapon)));
+
+        public static readonly DiscordComponent[] OffTurnComponents = new DiscordComponent[] { BlockStance, ParryStance, DodgeStance, AttackStance };
+
+        public static DiscordButtonComponent LightAttack => new DiscordButtonComponent(ButtonStyle.Secondary, "LightAttack", "Light Attack (0.8x)", false, new DiscordComponentEmoji(EmojiHelper.GetItemEmoji(ItemCategory.Weapon)));
+        public static DiscordButtonComponent NormalAttack => new DiscordButtonComponent(ButtonStyle.Secondary, "NormalAttack", "Normal Attack (1.0x)", false, new DiscordComponentEmoji(EmojiHelper.GetItemEmoji(ItemCategory.Weapon)));
+        public static DiscordButtonComponent HeavyAttack => new DiscordButtonComponent(ButtonStyle.Secondary, "HeavyAttack", "Heavy Attack (1.3x)", false, new DiscordComponentEmoji(EmojiHelper.GetItemEmoji(ItemCategory.Weapon)));
+
+        public static readonly DiscordComponent[] AttackTurnComponents = new DiscordComponent[] { LightAttack, NormalAttack, HeavyAttack };
+
+
         /// <summary>
         /// MainHand, Helmet, Chestplate, Arms, Leggings
         /// </summary>
@@ -33,9 +48,14 @@ namespace Yuzuri.Helpers
         /// </summary>
         public static readonly DiscordComponent[] EquipmentButtonComponents_3 = new DiscordComponent[] { Shoes, Ring, RedClose };
 
+        /// <summary>
+        /// Return Select options with items from list
+        /// </summary>
+        /// <param name="items">List of items to make select with</param>
+        /// <returns>Select with item options</returns>
         public static DiscordSelectComponentOption[] EquipmentMenuSelectOption(List<Item> items)
         {
-            List<Item> uniqueItems = items.Distinct().ToList();
+            //_ = items.Distinct().ToList();
 
             DiscordSelectComponentOption[] options = new DiscordSelectComponentOption[items.Count];
 

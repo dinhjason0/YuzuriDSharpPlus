@@ -148,7 +148,7 @@ namespace Yuzuri.Commands
             await Task.Delay(100);
             List<List<int>> spriteDestinationLists = spriteSheetDecoder.SpriteDestinationList();
             string sendMessage = "";
-            for (int i = 0; i < spriteDestinationLists.Count(); i++)
+            for (int i = 0; i < spriteDestinationLists.Count; i++)
             {
                 List<int> tempList = spriteDestinationLists[i];
                 sendMessage += $"[{tempList[0]} , {tempList[1]}]\n";
@@ -200,7 +200,7 @@ namespace Yuzuri.Commands
                     List<Sprite> playerSpriteDestinationLists = new List<Sprite>();
                     //Read PlayerSheetAssistant.json
                     //Pull out all coordinates into a list
-                    for (int i = 0; i < spriteNames.Count(); i++)
+                    for (int i = 0; i < spriteNames.Count; i++)
                     {
                         Sprite storedSprite = new Sprite(spriteNames[i]);
                         Console.WriteLine(storedSprite.SpriteName);
@@ -211,7 +211,7 @@ namespace Yuzuri.Commands
                         }
                     }
                     Console.WriteLine($"\nPlayer Sprite Destination Lists For Players:");
-                    if (playerSpriteDestinationLists.Count() != 0)
+                    if (playerSpriteDestinationLists.Count != 0)
                         foreach (Sprite spritedata in playerSpriteDestinationLists)
                         {
                             Console.WriteLine($"{spritedata.GetSpriteName()}");
@@ -225,8 +225,8 @@ namespace Yuzuri.Commands
                     //Return y/coordinates[1] position incrementally
                     //If there is "available__loading" before the latest, use that sprite
                     List<int> borrowedCoords = new List<int>();
-                    if (playerSpriteDestinationLists.Count() != 0)
-                        for (int i = 0; i < playerSpriteDestinationLists.Count(); i++)
+                    if (playerSpriteDestinationLists.Count != 0)
+                        for (int i = 0; i < playerSpriteDestinationLists.Count; i++)
                         {
                             if (playerSpriteDestinationLists[i].SpriteName == "available__loading")
                             {
@@ -235,7 +235,7 @@ namespace Yuzuri.Commands
                                 break;
                             }
 
-                            if (i == playerSpriteDestinationLists.Count() - 1)
+                            if (i == playerSpriteDestinationLists.Count - 1)
                             {
                                 borrowedCoords.Add(playerSpriteDestinationLists[i].SpriteCoords[0]);
                                 borrowedCoords.Add(playerSpriteDestinationLists[i].SpriteCoords[1] + 1);
@@ -304,8 +304,7 @@ namespace Yuzuri.Commands
         public async Task ReloadItems(CommandContext ctx)
         {
             await ctx.Channel.SendMessageAsync("Reloading Items...");
-            //ItemManager.Clear();
-            //Bot.ReloadItems();
+            ItemManager.ReloadItems();
         }
 
         [Command("giveitem"), Description("Gives a player an item")]
@@ -423,6 +422,7 @@ namespace Yuzuri.Commands
             return embed;
         }
 
+        //TODO FIX ItemEffect None bug
         private async Task ItemEditor(CommandContext ctx, Item item)
         {
             await ctx.Channel.SendMessageAsync("WIP").ConfigureAwait(false);
@@ -485,7 +485,7 @@ namespace Yuzuri.Commands
                             item.Desc = string.Join(" ", responses[1..]);
                             break;
                         case "ITEMEFFECT":
-                            _ = Enum.TryParse(responses[1].Trim(), out ItemEffect itemEffect);
+                            Enum.TryParse(responses[1].Trim(), out ItemEffect itemEffect);
                             if (item.ItemEffects.Contains(itemEffect)) item.ItemEffects.Remove(itemEffect);
                             else item.ItemEffects.Add(itemEffect);
 

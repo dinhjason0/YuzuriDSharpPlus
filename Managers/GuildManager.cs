@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -80,7 +81,7 @@ namespace Yuzuri.Managers
                                 case "Floors":
                                     if (hasFloorsCategory) break;
 
-                                    Bot.Client.Logger.LogInformation($"{guild.Name}'s Floors... Found!");
+                                    Bot.Client.Logger.LogInformation($"{guild.Name}'s Floor Category... Found!");
                                     hasFloorsCategory = true;
                                     yuzuGuild.FloorId = channel.Value.Id;
                                     break;
@@ -114,9 +115,9 @@ namespace Yuzuri.Managers
                         DiscordOverwriteBuilder[] discordOverwrite = new DiscordOverwriteBuilder[1];
                         discordOverwrite[0] = new DiscordOverwriteBuilder(guild.EveryoneRole) { Denied = Permissions.AccessChannels };
 
-                        Bot.Client.Logger.LogWarning($"{guild.Name}'s Floors... 404 NOT FOUND!");
+                        Bot.Client.Logger.LogWarning($"{guild.Name}'s Floor Category... 404 NOT FOUND!");
                         var floor = await guild.CreateChannelCategoryAsync("Floors", discordOverwrite).ConfigureAwait(false);
-                        Bot.Client.Logger.LogInformation($"Generating {guild.Name}'s Floors...");
+                        Bot.Client.Logger.LogInformation($"Generating {guild.Name}'s Floor Category...");
 
                         yuzuGuild.FloorId = floor.Id;
                     }
@@ -203,6 +204,30 @@ namespace Yuzuri.Managers
 
                 }
 
+                // Check if floors exist
+                if (yuzuGuild.Floors.Count > 0)
+                {
+                    Bot.Client.Logger.LogWarning($"{guild.Name}'s Floor Channels... Found!");
+                }
+                else
+                {
+                    Bot.Client.Logger.LogWarning($"{guild.Name}'s Floor Channels... 404 NOT FOUND!");
+                    DiscordOverwriteBuilder[] discordOverwrite = new DiscordOverwriteBuilder[1];
+                    discordOverwrite[0] = new DiscordOverwriteBuilder(guild.EveryoneRole) { Denied = Permissions.AccessChannels };
+                    Bot.Client.Logger.LogInformation($"Generating {guild.Name}'s Floor Category...");
+
+                    for (int i = 0; i < 6; i++)
+                    {
+                        var floor = await guild.CreateChannelAsync($"Floor {i + 1}", ChannelType.Text,
+                            guild.GetChannel(yuzuGuild.FloorId), overwrites: discordOverwrite).ConfigureAwait(false);
+                        await Task.Delay(500);
+
+                        yuzuGuild.Floors.Add(floor.Id);
+                    }
+                }
+
+
+
                 Bot.Client.Logger.LogInformation($"Generating {guild.Name} data... Done.");
                 WriteGuildData(yuzuGuild);
 
@@ -214,5 +239,13 @@ namespace Yuzuri.Managers
                 Console.WriteLine(ex);
             }
         }
+
+        public static bool FloorCheck(DiscordChannel channel)
+        {
+            YuzuGuild yuzuGuild = ReadGuildData(channel.Guild.Id);
+
+            return yuzuGuild.Floors.Contains(channel.Id);
+        }
+
     }
 }

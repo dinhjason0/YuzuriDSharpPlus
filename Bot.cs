@@ -58,7 +58,7 @@ namespace Yuzuri
                     Token = Debug.Token,
                     TokenType = TokenType.Bot,
                     AutoReconnect = true,
-                    MinimumLogLevel = LogLevel.Debug,
+                    MinimumLogLevel = LogLevel.Information,
                     Intents = DiscordIntents.AllUnprivileged
                 });
 
@@ -117,7 +117,7 @@ namespace Yuzuri
 
             RegisterEvents();
 
-            Client.Logger.LogDebug($"Yuzuki now Online! Startup took {(DateTime.Now - dateTime).TotalSeconds} seconds");
+            Client.Logger.LogInformation($"Yuzuki now Online! Startup took {(DateTime.Now - dateTime).TotalSeconds} seconds");
 
             await Client.ConnectAsync().ConfigureAwait(false);
 
@@ -157,7 +157,7 @@ namespace Yuzuri
 
             await GuildManager.GuildCheck(e.Guild).ConfigureAwait(false);
 
-            Client.Logger.LogDebug($"Discord Requirements check took {(DateTime.Now - dateTime).TotalSeconds} seconds");
+            Client.Logger.LogInformation($"Discord Requirements check took {(DateTime.Now - dateTime).TotalSeconds} seconds");
         }
 
         private async Task OnClientReady(DiscordClient sender, ReadyEventArgs e)
