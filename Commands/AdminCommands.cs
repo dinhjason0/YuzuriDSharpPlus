@@ -12,13 +12,9 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Processing;
 using Yuzuri.Managers;
-using System.Linq;
 using DSharpPlus.Interactivity.Extensions;
 using Yuzuri.Helpers;
 using Newtonsoft.Json;
-using System.Linq.Expressions;
-using Emzi0767.Utilities;
-using DSharpPlus.EventArgs;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Yuzuri.Commands
@@ -129,7 +125,7 @@ namespace Yuzuri.Commands
         [RequirePermissions(Permissions.Administrator)]
         public async Task CallDecoder(CommandContext ctx)
         {
-            Managers.ImageProcesserManager spriteSheetDecoder = ImageProcesserManager;
+            ImageProcesserManager spriteSheetDecoder = ImageProcesserManager;
             string targetSprite = "Beauty_Dress";
             List<int> coordinateSet = spriteSheetDecoder.SpriteDestination(targetSprite);
             var msg = await new DiscordMessageBuilder()

@@ -14,7 +14,7 @@ using Yuzuri.Managers;
 
 namespace Yuzuri.Commands
 {
-    public class PlayerCommands : SlashCommandModule
+    public class PlayerCommands : ApplicationCommandModule
     {
         public Random Rng { get; private set; }
         public PlayerManager PlayerManager {get; private set; }

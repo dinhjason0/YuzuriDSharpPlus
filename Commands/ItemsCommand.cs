@@ -16,7 +16,7 @@ using Yuzuri.Managers;
 
 namespace Yuzuri.Commands
 {
-    public class ItemsCommand : SlashCommandModule
+    public class ItemsCommand : ApplicationCommandModule
     {
 
         public ItemManager ItemManager { get; private set; }
@@ -63,7 +63,7 @@ namespace Yuzuri.Commands
                 await ctx.DeleteResponseAsync().ConfigureAwait(false);
 
                 await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages,
-                    behaviour: PaginationBehaviour.WrapAround, deletion: PaginationDeletion.DeleteEmojis,
+                    behaviour: PaginationBehaviour.WrapAround, deletion: ButtonPaginationBehavior.DeleteButtons,
                     timeoutoverride: TimeSpan.FromMinutes(2)).ConfigureAwait(false);
 
                 
