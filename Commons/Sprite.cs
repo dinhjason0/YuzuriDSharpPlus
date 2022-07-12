@@ -78,7 +78,7 @@ namespace Yuzuri.Commons
                     {
                         if (checkToSpace[i] == "available__loading")
                         {
-                                checkToSpace[i] = $"{checkToSpace[i].Replace("available__loading")}";
+                                //checkToSpace[i] = $"{checkToSpace[i].Replace("available__loading")}";
                             foreach (string str in checkToSpace)
                             {
                                 json += $"{str}\n";

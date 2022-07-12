@@ -35,7 +35,7 @@ namespace Yuzuri.Managers
 
             return guild;
         }
-
+        
         public async Task GuildCheck(DiscordGuild guild)
         {
             try
@@ -53,14 +53,13 @@ namespace Yuzuri.Managers
                     Bot.Client.Logger.LogInformation($"Checking {guild.Name} data... OK.");
                     yuzuGuild = ReadGuildData(guild.Id);
                 }
-
+                /*
                 // Check if already exists
                 bool hasRoomCategory = yuzuGuild.RoomId != 0;
                 bool hasFloorsCategory = yuzuGuild.FloorId != 0;
                 ulong resourcesChannel = yuzuGuild.Resources.Count == 0 ? 0 : yuzuGuild.Resources[0];
-                /* ulong resourcesChannel = 0;
                  if (yuzuGuild.Resources.Count == 0)
-                     resourcesChannel = yuzuGuild.Resources[0];*/
+                     resourcesChannel = yuzuGuild.Resources[0];
 
                 if (!hasRoomCategory || !hasFloorsCategory || resourcesChannel == 0)
                 {
@@ -225,7 +224,7 @@ namespace Yuzuri.Managers
                         yuzuGuild.Floors.Add(floor.Id);
                     }
                 }
-
+                */
 
 
                 Bot.Client.Logger.LogInformation($"Generating {guild.Name} data... Done.");

@@ -14,7 +14,7 @@ namespace Yuzuri.Managers
     class JsonManager
     {
         //Dimensions for Sprite Sheet tiles
-
+        /*
         public List<List<int>> SpriteDestinationList()
         {
             using (StreamReader reader = new StreamReader($"data/Sprite_Resources/PlayerSheetAssistant.json"))
@@ -39,7 +39,7 @@ namespace Yuzuri.Managers
                 }
                 return value;
             }
-        }
+        }*/
 
         public List<string> SpriteNames()
         {

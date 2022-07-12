@@ -35,6 +35,31 @@ namespace Yuzuri.Commands
             ImageProcesserManager = provider.GetRequiredService<ImageProcesserManager>();
         }
 
+        [Command("register")]
+        public async Task RegisterRoom(CommandContext ctx)
+        {
+            if (ctx == null) return;
+
+            YuzuGuild yuzuGuild = GuildManager.ReadGuildData(ctx.Guild.Id);
+
+            DiscordGuild server = ctx.Guild;
+
+            if (yuzuGuild == null) return;
+
+            DiscordChannel category = await server.CreateChannelCategoryAsync("Battle Grounds").ConfigureAwait(false);
+
+            await ctx.Channel.SendMessageAsync("Created Battle Room");
+
+            string msg = $"{DiscordEmoji.FromName(ctx.Client, ":heavy_plus_sign:")} New Battle Lobby";
+            DiscordChannel channel = await server.CreateTextChannelAsync(msg, category).ConfigureAwait(false);
+
+            yuzuGuild.FloorId = channel.Id;
+
+            GuildManager.WriteGuildData(yuzuGuild);
+
+        }
+
+        /*
         [Command("reset")]
         [Hidden]
         [RequirePermissions(Permissions.Administrator)]
@@ -550,6 +575,6 @@ namespace Yuzuri.Commands
             {
 
             }
-        }
+        }*/
     }
 }

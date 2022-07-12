@@ -55,7 +55,7 @@ namespace Yuzuri
             {
                 Client = new DiscordClient(new DiscordConfiguration
                 {
-                    Token = Debug.Token,
+                    Token = "OTUyNDc3NTQ3NDg3MTk1MjE2.G6DAI7.-S8zJ1lFoeNgWqCUhVyelma8EOQLbMPRsGbNVY",
                     TokenType = TokenType.Bot,
                     AutoReconnect = true,
                     MinimumLogLevel = LogLevel.Information,
@@ -98,6 +98,7 @@ namespace Yuzuri
                 });
                 //Commands.RegisterCommands<PlayerCommands>();
                 Commands.RegisterCommands<AdminCommands>();
+                Commands.RegisterCommands<BattleCommands>();
                 //Commands.RegisterCommands<ItemsCommand>();
                 //Commands.RegisterCommands(Assembly.GetExecutingAssembly());
                 
@@ -108,6 +109,7 @@ namespace Yuzuri
                 
                 Slash.RegisterCommands<ItemsCommand>();
                 Slash.RegisterCommands<PlayerCommands>();
+                //Slash.RegisterCommands<BattleCommands>();
             }
             catch (Exception ex)
             {
@@ -157,7 +159,8 @@ namespace Yuzuri
 
             await GuildManager.GuildCheck(e.Guild).ConfigureAwait(false);
 
-            Client.Logger.LogInformation($"Discord Requirements check took {(DateTime.Now - dateTime).TotalSeconds} seconds");
+            string message = $"Discord Requirements check took {(DateTime.Now - dateTime).TotalSeconds} seconds";
+            Client.Logger.LogInformation(message);
         }
 
         private async Task OnClientReady(DiscordClient sender, ReadyEventArgs e)
